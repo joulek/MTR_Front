@@ -1,0 +1,815 @@
+{
+  "auth": {
+    "forgot": "Forgot password?",
+    "forgotTitle": "Mot de passe oublié",
+    "code": "Code",
+    "confirmReset": "Confirm reset",
+    "forgotHintCode": "Enter your email: we will send you a reset code.",
+    "sendResetCode": "Send code",
+    "forgotSentCode": "If an account exists, a code has been sent to your email.",
+    "resetByCodeTitle": "Reset with a code",
+    "resetByCodeHint": "Enter the code received by email along with your new password.",
+    "forgotHint": "Enter your email, we will send you a reset code.",
+    "sendReset": "Send reset link",
+    "forgotSent": "If an account exists, an email has been sent.",
+    "resetTitle": "Reset password",
+    "resetHint": "Choose a new password.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetSubmit": "Reset",
+    "resetSuccess": "Password successfully reset! Redirecting...",
+    "backToLogin": "← Back to login",
+    "loginTitle": "Sign in",
+    "registerTitle": "Create account",
+    "lastName": "Last name",
+    "firstName": "First name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "accountType": "Account type",
+    "personal": "Personal",
+    "company": "Company",
+    "cin": "National ID",
+    "currentPosition": "Current position",
+    "companyName": "Company name",
+    "taxId": "Tax ID",
+    "password": "Password",
+    "registerBtn": "Register",
+    "haveAccount": "Already have an account?",
+    "goLogin": "Sign in",
+    "joinClientSpace": "Join our client space",
+    "promoText": "Request quotes, track your orders, and manage your industrial interventions.",
+    "rememberMe": "Remember me",
+    "noAccount": "No account?",
+    "goRegister": "Register",
+    "loginBtn": "Sign in",
+    "placeholders": {
+      "lastName": "Smith",
+      "firstName": "John",
+      "email": "example@email.com",
+      "phone": "+216 xx xxx xxx",
+      "address": "Street / City / Postal code",
+      "cin": "Ex: 01234567",
+      "currentPosition": "Ex: Quality Engineer",
+      "companyName": "Ex: Tunisian Spring Manufacturer",
+      "taxId": "Ex: MF1234567",
+      "password": "******"
+    },
+    "loading": "Loading...",
+    "errors": {
+      "network": "Network error, please try again.",
+      "loginFailed": "Incorrect credentials.",
+      "accountTypeRequired": "Please choose an account type.",
+      "noAccountForEmail": "No account is associated with this email."
+    },
+    "messages": {
+      "registerSuccess": "Account created successfully!",
+      "registerFailed": "Account creation failed!"
+    },
+    "client": {
+      "claimsPage": {
+        "title": "My Claims",
+        "subtitle": "Track your claims and download their PDFs.",
+        "searchPlaceholder": "Search (number, type, nature, expectation, date…)",
+        "clear": "Clear",
+        "loading": "Loading…",
+        "noData": "No claims.",
+        "table": {
+          "document": "Document",
+          "nature": "Nature",
+          "attente": "Expectation",
+          "createdAt": "Created",
+          "pdf": "PDF"
+        },
+        "actions": {
+          "open": "Open"
+        },
+        "notYet": "Not yet",
+        "errors": {
+          "fileNotFound": "File not found",
+          "cannotOpen": "Unable to open this file."
+        },
+        "aria": {
+          "openPdf": "Open PDF",
+          "clear": "Clear"
+        }
+      },
+      "welcome": "Welcome {name}",
+      "home": "Home",
+      "profile": "My Profile",
+      "orders": "My Orders",
+      "logout": "Log out",
+      "dashboardTitle": "Welcome to your client area",
+      "dashboardSubtitle": "Track your orders and update your information.",
+      "quotes": "Request a Quote",
+      "submitClaim": "Submit a claim",
+      "top": {
+        "about": "About Us",
+        "refund": "Refund Policy",
+        "help": "Help Desk"
+      },
+      "services": {
+        "menu": "My Services",
+        "orders": "My Orders",
+        "quotes": "My Quote Requests",
+        "claims": "My Claims"
+      },
+      "quoteRequest": "Request a Quote",
+      "quotesPage": {
+        "title": "My Quote Requests",
+        "subtitle": "All requests you have submitted, newest first.",
+        "searchPlaceholder": "Search by quote no., type…",
+        "clear": "Clear",
+        "loading": "Loading…",
+        "noData": "No requests found.",
+        "table": {
+          "number": "Quote request N°",
+          "type": "Quote request type",
+          "files": "Attachments",
+          "createdAt": "Sent at",
+          "order": "Order"
+        },
+        "actions": {
+          "order": "Order"
+        }
+      }
+    },
+    "admin": {
+      "title": "Admin Panel",
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "articles": "Articles",
+      "categories": "Categories",
+      "products": "Products",
+      "users": "Users",
+      "logout": "Log out",
+      "welcomeDashboard": "Welcome to the Admin Dashboard",
+      "dashboardSubtitle": "Manage your users, orders and settings.",
+      "number": "No.",
+      "client": "Client",
+      "email": "Email",
+      "date": "Date",
+      "open": "Open",
+      "noOrders": "No quotes",
+      "error": "Error",
+      "notAuthenticated": "Not authenticated",
+      "pdfError": "PDF Error",
+      "networkPdfError": "Network error while opening PDF",
+      "tractionOrders": " Quotes requests"
+    },
+    "devis": {
+      "title": "Technical Specifications Form",
+      "subtitle": "Choose a product type to display the corresponding form.",
+      "types": {
+        "compression": " Compression Spring",
+        "traction": " Extension Spring",
+        "torsion": "Torsion Spring",
+        "fil": " Straightened / Cut Wire",
+        "grille": " Metal Grid",
+        "autre": " Other Metal Wire Product"
+      }
+    },
+    "tractionForm": {
+      "title": " Extension Springs",
+      "diameterWire": "Wire diameter (d)",
+      "diameterExt": "Outer diameter (De)",
+      "schema": "Schema",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "maindim": "Main specifications",
+      "freeLength": "Free length (Lo)",
+      "totalCoils": "Total coils",
+      "quantity": "Quantity",
+      "material": "Material",
+      "selectPlaceholder": "-- Select --",
+      "materialOptions": [
+        "Black spring wire (SM, SH)",
+        "Galvanized spring wire",
+        "Stainless steel spring wire"
+      ],
+      "windingDirection": "Winding direction",
+      "windingOptions": [
+        "Left winding",
+        "Right winding"
+      ],
+      "ringPosition": "Ring position",
+      "ringOptions": [
+        "0°",
+        "90°",
+        "180°",
+        "270°"
+      ],
+      "hookType": "Hook type",
+      "hookOptions": [
+        "German hook",
+        "Double German hook",
+        "Tangent hook",
+        "Extended hook",
+        "English loop",
+        "Swivel hook",
+        "Conical with screw"
+      ],
+      "docs": "Associated documents",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "mustBeLogged": "You must be logged in to send a quote.",
+      "clientOnly": "Only clients can send a quote request.",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "loginToSend": "Login to send",
+      "reservedClients": "Reserved for clients",
+      "sendRequest": "Send request"
+    },
+    "compressionForm": {
+      "title": " Compression Springs",
+      "schemaAlt": "Compression spring diagram",
+      "schema": "Schema",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "maindim": "Main specifications",
+      "diameterWire": "Wire diameter (d)",
+      "diameterExt": "Outer diameter (DE)",
+      "boreDiameter": "Bore diameter (H)",
+      "guideDiameter": "Guide diameter (S)",
+      "diameterInt": "Inner diameter (DI)",
+      "freeLength": "Free length (Lo)",
+      "totalCoils": "Total coils",
+      "pitch": "Pitch",
+      "quantity": "Quantity",
+      "material": "Material",
+      "loginToSend": "Login to send",
+      "materialOptions": [
+        "Black spring wire (SM, SH)",
+        "Galvanized spring wire",
+        "Stainless steel spring wire"
+      ],
+      "windingDirection": "Winding direction",
+      "windingOptions": [
+        "Left winding",
+        "Right winding"
+      ],
+      "extremityType": "Spring end type",
+      "extremityOptions": [
+        "ERM",
+        "EL",
+        "ELM",
+        "ERNM"
+      ],
+      "extremityAlt": "Spring ends",
+      "docs": "Associated documents",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "selectPlaceholder": "-- Select --",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "sendRequest": "Send request"
+    },
+    "torsionForm": {
+      "title": " Torsion Springs",
+      "schemaAlt": "Torsion spring diagram",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "diameterWire": "Wire diameter (d)",
+      "maindim": "Main specifications",
+      "schema": "Schema",
+      "diameterExt": "Outer diameter (De)",
+      "diameterInt": "Inner diameter (Di)",
+      "bodyLength": "Body length (Lc)",
+      "loginToSend": "Login to send",
+      "angle": "Torsion angle (°)",
+      "totalCoils": "Total coils",
+      "L1": "Leg length 1 (L1)",
+      "L2": "Leg length 2 (L2)",
+      "orientation": "Leg orientation",
+      "orientationOptions": [
+        "Symmetrical",
+        "Asymmetrical"
+      ],
+      "windingDirection": "Winding direction",
+      "windingOptions": [
+        "Left winding",
+        "Right winding"
+      ],
+      "quantity": "Quantity",
+      "material": "Material",
+      "materialOptions": [
+        "Black spring wire (SM, SH)",
+        "Galvanized spring wire",
+        "Stainless steel spring wire"
+      ],
+      "docs": "Associated documents",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "selectPlaceholder": "-- Select --",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "sendRequest": "Send request"
+    },
+    "filForm": {
+      "title": " Straightened / Cut Wire",
+      "schemaAlt": "Metal wire bundle",
+      "schema": "Schema",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "maindim": "Main specifications",
+      "length": "Straightened wire length (mm or m)",
+      "diameter": "Wire diameter (mm)",
+      "loginToSend": "Login to send",
+      "unit": "Quantity unit",
+      "unitLong": "Length unit",
+      "unitOptions": [
+        "Pieces",
+        "Kg"
+      ],
+      "quantityWanted": "Desired quantity",
+      "material": "Material",
+      "materialChecks": [
+        "Galvanized steel",
+        "Black steel",
+        "Spring steel",
+        "Stainless steel"
+      ],
+      "docs": "Associated document (any file type)",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "selectPlaceholder": "-- Select --",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "sendRequest": "Send request"
+    },
+    "grilleForm": {
+      "title": " Metal Grid",
+      "schemaAlt": "Metal grid with zoom",
+      "schema": "Schema",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "maindim": "Main specifications",
+      "L": "Length (L)",
+      "loginToSend": "Login to send",
+      "l": "Width (l)",
+      "nbLong": "Number of longitudinal bars",
+      "nbTrans": "Number of transverse bars",
+      "pas1": "Longitudinal spacing (Pitch 1)",
+      "pas2": "Transverse spacing (Pitch 2)",
+      "D2": "Wire diameter of bars (D₂)",
+      "D1": "Wire diameter of frame (D₁)",
+      "selectPlaceholder": "-- Select --",
+      "quantity": "Quantity",
+      "material": "Material",
+      "materialChecks": [
+        "Galvanized steel",
+        "Black steel",
+        "Stainless steel"
+      ],
+      "finish": "Finish / treatment",
+      "finishChecks": [
+        "Zinc plating",
+        "Paint",
+        "None"
+      ],
+      "docs": "Documents (drawing, sketch)",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "sendRequest": "Send request"
+    },
+    "autreForm": {
+      "title": " Other Metal Wire Product",
+      "designation": "Designation / Reference",
+      "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Click or drag and drop your files here",
+      "dimensions": "Main dimensions",
+      "mainInfo": "Main information",
+      "loginToSend": "Login to send",
+      "quantity": "Quantity",
+      "material": "Material",
+      "materialOptions": [
+        "Steel",
+        "Galvanized steel",
+        "Stainless steel",
+        "Other"
+      ],
+      "docs": "Documents (drawing, sketch, photo)",
+      "specialReq": "Special requirements",
+      "otherRemarks": "Other remarks",
+      "selectPlaceholder": "-- Select --",
+      "sendSuccess": "Request sent successfully!",
+      "sendError": "Error while sending.",
+      "networkError": "Network error.",
+      "sending": "Your request is being sent, please wait...",
+      "sendRequest": "Send request",
+      "description": "Description"
+    },
+    "categories": {
+      "title": "Category management",
+      "searchPlaceholder": "Search by FR / EN",
+      "searchAria": "Search a category",
+      "clearSearch": "Clear search",
+      "addButton": "Add",
+      "noData": "No categories.",
+      "errorLoad": "Load error",
+      "errorServer": "Server error",
+      "errorRequiredFR": "FR label is required.",
+      "errorCreate": "Creation failed",
+      "errorUpdate": "Update failed",
+      "errorDelete": "Deletion failed",
+      "table": {
+        "fr": "FR",
+        "en": "EN",
+        "actions": "Actions"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "id": "ID"
+      },
+      "placeholders": {
+        "frExample": "e.g., Springs (FR)",
+        "enExample": "e.g., Springs"
+      },
+      "add": {
+        "title": "Add a category",
+        "labelFR": "Label (FR)",
+        "labelEN": "Translation (EN)",
+        "saving": "Adding..."
+      },
+      "edit": {
+        "title": "Edit category",
+        "saving": "Saving..."
+      },
+      "delete": {
+        "title": "Delete category?",
+        "confirm": "Do you really want to delete this category?",
+        "irreversible": "This action is irreversible",
+        "deleting": "Deleting...",
+        "delete": "Delete"
+      }
+    },
+    "articles": {
+      "title": "Article management",
+      "searchPlaceholder": "Search (reference, designation, quote no.)",
+      "searchAria": "Search an article",
+      "clearSearch": "Clear search",
+      "addButton": "Add",
+      "noData": "No articles.",
+      "loading": "Loading…",
+      "loadingQuotes": "Loading quote numbers…",
+      "table": {
+        "reference": "Reference",
+        "designation": "Designation",
+        "priceHT": "Price excl. tax",
+        "priceTTC": "Price incl. tax",
+        "quoteNumber": "Quote No.",
+        "actions": "Actions"
+      },
+      "labels": {
+        "reference": "Reference",
+        "designation": "Designation",
+        "priceHT": "Price excl. tax",
+        "quoteNumber": "Quote No."
+      },
+      "placeholders": {
+        "refExample": "Ex: ART-001",
+        "designationExample": "Ex: Compression spring Ø10",
+        "priceExample": "Ex: 100.00",
+        "select": "-- Select --"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "form": {
+        "addTitle": "Add an article",
+        "editTitle": "Edit article",
+        "cancel": "Cancel",
+        "create": "Add",
+        "update": "Update",
+        "creating": "Creating…",
+        "updating": "Updating…"
+      },
+      "delete": {
+        "title": "Delete article",
+        "confirm": "Do you confirm deletion of",
+        "delete": "Delete",
+        "deleting": "Deleting…"
+      },
+      "errors": {
+        "requiredReference": "Reference is required",
+        "requiredDesignation": "Designation is required",
+        "invalidHT": "Invalid price (excl. tax)"
+      },
+      "misc": {
+        "none": "—"
+      }
+    },
+    "products": {
+      "title": "Product management",
+      "searchPlaceholder": "Search by FR / EN",
+      "searchAria": "Search a product",
+      "clearSearch": "Clear search",
+      "addButton": "Add",
+      "noData": "No products.",
+      "table": {
+        "category": "Category",
+        "name": "Name",
+        "description": "Description",
+        "images": "Images",
+        "actions": "Actions"
+      },
+      "actions": {
+        "expand": "Show more",
+        "collapse": "Show less",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "form": {
+        "addTitle": "Add a product",
+        "editTitle": "Edit product",
+        "addHint": "Fill in the information below",
+        "editHint": "Update the information below",
+        "labelFR": "Label (FR)",
+        "labelEN": "Translation (EN)",
+        "descFR": "Description (FR)",
+        "descEN": "Description (EN)",
+        "category": "Category",
+        "images": "Images",
+        "replaceAll": "Replace all images",
+        "cancel": "Cancel",
+        "create": "Save",
+        "update": "Save",
+        "creating": "Creating…",
+        "updating": "Saving…",
+        "dropTextAdd": "Drag & drop here, or click to select (add)",
+        "dropTextReplace": "Select the new images (they will replace all previous ones).",
+        "removeThis": "Remove this image",
+        "undoRemove": "Undo removal"
+      },
+      "placeholders": {
+        "nameFr": "e.g., Springs",
+        "nameEn": "e.g., Springs",
+        "descFr": "Short description in French",
+        "descEn": "Short description in English",
+        "selectCategory": "Choose a category"
+      },
+      "delete": {
+        "title": "Delete this product?",
+        "confirm": "This action is ",
+        "irreversible": "irreversible",
+        "delete": "Delete",
+        "deleting": "Deleting…"
+      },
+      "gallery": {
+        "title": "Image gallery",
+        "open": "Open images",
+        "prev": "Previous image",
+        "next": "Next image",
+        "goto": "Go to image",
+        "image": "Image",
+        "imageAlt": "image"
+      },
+      "errors": {
+        "network": "Network error",
+        "createFailed": "Creation failed",
+        "updateFailed": "Update failed"
+      },
+      "misc": {
+        "category": "Category"
+      }
+    }
+  },
+  "profile": {
+    "userFallback": "User",
+    "lang": {
+      "fr": "French",
+      "en": "English"
+    },
+    "account": {
+      "title": "Account",
+      "unknownEmail": "unknown email",
+      "personalInfo": "Personal details",
+      "companyInfo": "Company details",
+      "fields": {
+        "lastName": "Last name",
+        "firstName": "First name",
+        "phone": "Phone",
+        "address": "Address",
+        "accountType": "Account type",
+        "loginEmail": "Email",
+        "cin": "National ID",
+        "currentPosition": "Current position",
+        "matriculeFiscal": "Tax ID",
+        "companyName": "Company name"
+      },
+      "types": {
+        "personal": "Personal",
+        "company": "Company",
+        "undefined": "Undefined"
+      }
+    },
+    "shortcuts": {
+      "title": "Shortcuts",
+      "home": "Home",
+      "homeHint": "Back to home",
+      "claimsHint": "My claims",
+      "claims": "My Claims",
+      "orders": "My orders",
+      "ordersHint": "History & tracking",
+      "help": "Help",
+      "helpHint": "FAQ, contact",
+      "security": "Security",
+      "securityHint": "Read-only account info"
+    },
+    "settings": {
+      "title": "App settings",
+      "language": "Language",
+      "languageHint": "Change site language"
+    },
+    "about": {
+      "title": "About",
+      "text": "MTR Industry — Client space. Version 1.0"
+    },
+    "loading": "Loading…"
+  },
+  "support": {
+    "title": "Help & Support",
+    "intro": "Need help? Check our FAQ or contact our team.",
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": {
+        "t": "How do I change my password?",
+        "a": "Go to Settings > Security, then click “Change my password”."
+      },
+      "q2": {
+        "t": "I can't sign in, what should I do?",
+        "a": "Check your email and password. If it still fails, use “Forgot password”."
+      },
+      "q3": {
+        "t": "How can I contact support?",
+        "a": "You can reach us by email, phone or live chat."
+      }
+    },
+    "contact": {
+      "title": "Contact us",
+      "email": "support@mtr.com",
+      "phone": "+216 71 234 567",
+      "chat": "Live chat (9am–6pm)"
+    },
+    "resources": {
+      "title": "Useful resources",
+      "guide": "User guide",
+      "faq": "Full FAQ center",
+      "privacy": "Privacy policy"
+    }
+  },
+  "devisAutre": {
+    "title": "Quote Request – Other Types",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document."
+    }
+  },
+  "devisCompression": {
+    "title": "Quote Request – Compression Spring",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document."
+    }
+  },
+  "devisFil": {
+    "title": "Quote Request – Straight/Cut Wire",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document."
+    }
+  },
+  "devisGrille": {
+    "title": "Quote Request – Wire Mesh",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document."
+    }
+  },
+  "devisTorsion": {
+    "title": "Quote Request – Torsion Spring",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "attachmentsOpenAria": "Open file {index}",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document."
+    }
+  },
+  "devisTraction": {
+    "title": "Quote Request – Extension Spring",
+    "searchPlaceholder": "Search by No., client or date…",
+    "searchAria": "Search a quote request",
+    "clearSearch": "Clear search",
+    "noData": "No quote request",
+    "columns": {
+      "number": "No.",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "Quote PDF",
+      "attachments": "Attachments"
+    },
+    "open": "Open",
+    "attachmentsOpenAria": "Open file {index}",
+    "errors": {
+      "pdfUnavailable": "PDF not available.",
+      "pdfOpenError": "Unable to open PDF.",
+      "docUnavailable": "Document not available.",
+      "docOpenError": "Unable to open document.",
+      "network": "Network error"
+    }
+  },
+  "pagination": {
+    "showing": "Showing",
+    "of": "of",
+    "perPage": "Per page",
+    "prev": "Previous page",
+    "next": "Next page"
+  }
+}

@@ -1,0 +1,810 @@
+{
+  "auth": {
+    "confirmReset": "Confirmer la réinitialisation",
+    "forgot": "Mot de passe oublié?",
+    "forgotTitle": "Mot de passe oublié",
+    "newPassword": "Nouveau mot de passe",
+    "code": "Code",
+    "forgotHint": "Entrez votre email : nous vous enverrons un code de réinitialisation.",
+    "sendReset": "Envoyer le code",
+    "resetByCodeTitle": "Réinitialiser avec un code",
+    "resetByCodeHint": "Saisissez le code reçu par email avec votre nouveau mot de passe.",
+    "resetSuccess": "Mot de passe réinitialisé avec succès.",
+    "backToLogin": "Retour à la connexion",
+    "loginTitle": "Se connecter",
+    "registerTitle": "Créer un compte",
+    "lastName": "Nom",
+    "firstName": "Prénom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "address": "Adresse",
+    "accountType": "Type de compte",
+    "personal": "Personnel",
+    "company": "Société",
+    "cin": "CIN",
+    "currentPosition": "Poste actuel",
+    "companyName": "Nom de la société",
+    "taxId": "Matricule fiscale",
+    "password": "Mot de passe",
+    "registerBtn": "S’inscrire",
+    "haveAccount": "Déjà un compte ?",
+    "goLogin": "Se connecter",
+    "joinClientSpace": "Rejoignez notre espace client",
+    "promoText": "Demandez vos devis, suivez vos commandes et gérez vos interventions industrielles.",
+    "rememberMe": "Se souvenir de moi",
+    "noAccount": "Pas de compte ?",
+    "goRegister": "S'inscrire",
+    "loginBtn": "Se connecter",
+    "placeholders": {
+      "lastName": "Dupont",
+      "firstName": "Jean",
+      "email": "exemple@email.com",
+      "phone": "+216 xx xxx xxx",
+      "address": "Rue / Ville / Code postal",
+      "cin": "Ex : 01234567",
+      "currentPosition": "Ex : Ingénieur Qualité",
+      "companyName": "Ex : Manufacture Tunisienne des Ressorts",
+      "taxId": "Ex : MF1234567",
+      "password": "******"
+    },
+    "loading": "Chargement...",
+    "errors": {
+      "network": "Erreur réseau, veuillez réessayer.",
+      "loginFailed": "Identifiants incorrects.",
+      "accountTypeRequired": "Veuillez choisir le type de compte.",
+      "noAccountForEmail": "Aucun compte n'est associé à cet email."
+    },
+    "messages": {
+      "registerSuccess": "Compte créé avec succès !",
+      "registerFailed": "Création du compte a échoué !"
+    },
+    "client": {
+      "claimsPage": {
+        "title": "Mes réclamations",
+        "subtitle": "Suivez vos réclamations et téléchargez leurs PDF.",
+        "searchPlaceholder": "Rechercher (numéro, type, nature, attente, date…)",
+        "clear": "Effacer",
+        "loading": "Chargement…",
+        "noData": "Aucune réclamation.",
+        "table": {
+          "document": "Document",
+          "nature": "Nature",
+          "attente": "Attente",
+          "createdAt": "Créée",
+          "pdf": "PDF"
+        },
+        "actions": {
+          "open": "Ouvrir"
+        },
+        "notYet": "Pas encore",
+        "errors": {
+          "fileNotFound": "Fichier introuvable",
+          "cannotOpen": "Impossible d’ouvrir ce fichier."
+        },
+        "aria": {
+          "openPdf": "Ouvrir le PDF",
+          "clear": "Effacer"
+        }
+      },
+      "welcome": "Bienvenue {name}",
+      "you": "vous",
+      "orders": "Mes commandes",
+      "dashboardTitle": "Bienvenue dans votre espace client",
+      "dashboardSubtitle": "Suivez vos commandes et mettez à jour vos informations.",
+      "quotes": "Demander un devis",
+      "submitClaim": "Réclamer",
+      "top": {
+        "about": "À propos",
+        "refund": "Politique de remboursement",
+        "help": "Assistance"
+      },
+      "home": "Accueil",
+      "profile": "Mon Profil",
+      "services": {
+        "menu": "Mes services",
+        "orders": "Mes commandes",
+        "quotes": "Mes demandes de devis",
+        "claims": "Mes réclamations"
+      },
+      "quoteRequest": "Demander un devis",
+      "logout": "Se déconnecter",
+      "quotesPage": {
+        "title": "Mes demandes de devis",
+        "subtitle": "Toutes vos demandes envoyées, triées du plus récent au plus ancien.",
+        "searchPlaceholder": "Rechercher par n° de devis, type…",
+        "clear": "Effacer",
+        "loading": "Chargement…",
+        "noData": "Aucune demande trouvée.",
+        "table": {
+          "number": "N° demande devis",
+          "type": "Type demande devis",
+          "files": "Fichiers joints",
+          "createdAt": "Date d’envoi",
+          "order": "Commande"
+        },
+        "actions": {
+          "order": "Commander"
+        }
+      }
+    },
+    "admin": {
+      "title": "Panneau d'administration",
+      "dashboard": "Tableau de bord",
+      "orders": "Commandes",
+      "articles": "Articles",
+      "categories": "Catégories",
+      "products": "Produits",
+      "users": "Utilisateurs",
+      "logout": "Se déconnecter",
+      "welcomeDashboard": "Bienvenue sur le Dashboard Admin",
+      "dashboardSubtitle": "Gérez vos utilisateurs, commandes et paramètres.",
+      "number": "N°",
+      "client": "Client",
+      "email": "Email",
+      "date": "Date",
+      "open": "Ouvrir",
+      "noOrders": "Aucun devis",
+      "error": "Erreur",
+      "notAuthenticated": "Non authentifié",
+      "pdfError": "Erreur PDF",
+      "networkPdfError": "Erreur réseau pendant l’ouverture du PDF",
+      "tractionOrders": " Demande Devis "
+    },
+    "devis": {
+      "title": "Formulaire de Spécifications Techniques",
+      "subtitle": "Choisissez un type de produit pour afficher le formulaire correspondant.",
+      "types": {
+        "compression": " Ressort de Compression",
+        "traction": " Ressort de Traction",
+        "torsion": " Ressort de Torsion",
+        "fil": " Fil dressé / coupé",
+        "grille": " Grille métallique",
+        "autre": " Autre article en fil métallique"
+      }
+    },
+    "tractionForm": {
+      "title": " Ressorts de Traction",
+      "diameterWire": "Diamètre du fil (d)",
+      "schema": "Schéma",
+      "maindim": "Spécifications principales",
+      "diameterExt": "Diamètre extérieur (De)",
+      "freeLength": "Longueur libre (Lo)",
+      "totalCoils": "Nombre total de spires",
+      "quantity": "Quantité",
+      "selectPlaceholder": "-- Choisir --",
+      "material": "Matière",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "materialOptions": [
+        "Fil ressort noir (SM, SH)",
+        "Fil ressort galvanisé",
+        "Fil ressort inox"
+      ],
+      "windingDirection": "Sens d’enroulement",
+      "windingOptions": [
+        "Enroulement gauche",
+        "Enroulement droite"
+      ],
+      "ringPosition": "Position des anneaux",
+      "ringOptions": [
+        "0°",
+        "90°",
+        "180°",
+        "270°"
+      ],
+      "hookType": "Type d’accrochage",
+      "hookOptions": [
+        "Anneau Allemand",
+        "Double Anneau Allemand",
+        "Anneau tangent",
+        "Anneau allongé",
+        "Boucle Anglaise",
+        "Anneau tournant",
+        "Conification avec vis"
+      ],
+      "docs": "Documents associés",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "mustBeLogged": "Vous devez être connecté pour envoyer un devis.",
+      "clientOnly": "Seuls les clients peuvent envoyer une demande de devis.",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "loginToSend": "Connectez-vous pour envoyer",
+      "reservedClients": "Réservé aux clients",
+      "sendRequest": "Envoyer la demande"
+    },
+    "compressionForm": {
+      "title": " Ressorts de Compression",
+      "schemaAlt": "Schéma ressort de compression",
+      "schema": "Schéma",
+      "maindim": "Spécifications principales",
+      "diameterWire": "Diamètre du fil (d)",
+      "diameterExt": "Diamètre extérieur (DE)",
+      "boreDiameter": "Diamètre de l’alésage (H)",
+      "guideDiameter": "Diamètre de guide (S)",
+      "diameterInt": "Diamètre intérieur (DI)",
+      "freeLength": "Longueur libre (Lo)",
+      "totalCoils": "Nombre total de spires",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "pitch": "Pas",
+      "quantity": "Quantité",
+      "material": "Matière",
+      "materialOptions": [
+        "Fil ressort noir (SM, SH)",
+        "Fil ressort galvanisé",
+        "Fil ressort inox"
+      ],
+      "windingDirection": "Sens d’enroulement",
+      "windingOptions": [
+        "Enroulement gauche",
+        "Enroulement droite"
+      ],
+      "extremityType": "Type d’extrémité du ressort",
+      "extremityOptions": [
+        "ERM",
+        "EL",
+        "ELM",
+        "ERNM"
+      ],
+      "extremityAlt": "Type d’extrémité du ressort",
+      "docs": "Documents associés",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "selectPlaceholder": "-- Choisir --",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "sendRequest": "Envoyer la demande",
+      "loginToSend": "Connectez-vous pour envoyer",
+      "reservedClients": "Réservé aux clients"
+    },
+    "torsionForm": {
+      "title": " Ressorts de Torsion",
+      "schemaAlt": "Schéma ressort torsion",
+      "schema": "Schéma",
+      "maindim": "Spécifications principales",
+      "diameterWire": "Diamètre du fil (d)",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "diameterExt": "Diamètre extérieur (De)",
+      "diameterInt": "Diamètre intérieur (Di)",
+      "bodyLength": "Longueur du corps (Lc)",
+      "angle": "Angle de torsion (°)",
+      "totalCoils": "Nombre total de spires",
+      "L1": "Longueur branche 1 (L1)",
+      "L2": "Longueur branche 2 (L2)",
+      "orientation": "Orientation des branches",
+      "orientationOptions": [
+        "Symétriques",
+        "Asymétriques"
+      ],
+      "windingDirection": "Sens d’enroulement",
+      "windingOptions": [
+        "Enroulement gauche",
+        "Enroulement droite"
+      ],
+      "quantity": "Quantité",
+      "material": "Matière",
+      "materialOptions": [
+        "Fil ressort noir (SM, SH)",
+        "Fil ressort galvanisé",
+        "Fil ressort inox"
+      ],
+      "docs": "Documents associés",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "selectPlaceholder": "-- Choisir --",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "sendRequest": "Envoyer la demande",
+      "loginToSend": "Connectez-vous pour envoyer",
+      "reservedClients": "Réservé aux clients"
+    },
+    "filForm": {
+      "title": " Fil dressé / coupé",
+      "schemaAlt": "Faisceau de fils métalliques",
+      "schema": "Schéma",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "maindim": "Spécifications principales",
+      "length": "Longueur du fil dressé (mm ou m)",
+      "diameter": "Diamètre du fil (mm)",
+      "unit": "Unité de quantité",
+      "unitLong": "Unité de Longueur",
+      "unitOptions": [
+        "Pièces",
+        "Kg"
+      ],
+      "quantityWanted": "Quantité souhaitée",
+      "material": "Matière",
+      "materialChecks": [
+        "Acier galvanisé",
+        "Acier Noir",
+        "Acier ressort",
+        "Acier inoxydable"
+      ],
+      "docs": "Document associé (tout type de fichier)",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "selectPlaceholder": "-- Choisir --",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "sendRequest": "Envoyer la demande",
+      "loginToSend": "Connectez-vous pour envoyer"
+    },
+    "grilleForm": {
+      "title": " Grille métallique",
+      "schemaAlt": "Grille métallique avec zoom",
+      "schema": "Schéma",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "maindim": "Spécifications principales",
+      "L": "Longueur (L)",
+      "l": "Largeur (l)",
+      "nbLong": "Nombre de tiges longitudinales",
+      "nbTrans": "Nombre de tiges transversales",
+      "pas1": "Espacement longitudinal (Pas 1)",
+      "pas2": "Espacement transversal (Pas 2)",
+      "D2": "Diamètre du fil des tiges (D₂)",
+      "D1": "Diamètre du fil du cadre (D₁)",
+      "quantity": "Quantité",
+      "material": "Matière",
+      "materialChecks": [
+        "Acier galvanisé",
+        "Acier Noir",
+        "Inox"
+      ],
+      "finish": "Finition / traitement",
+      "finishChecks": [
+        "Zingage",
+        "Peinture",
+        "Aucun"
+      ],
+      "docs": "Documents (plan, croquis)",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "sendRequest": "Envoyer la demande",
+      "loginToSend": "Connectez-vous pour envoyer",
+      "selectPlaceholder": "-- Choisir --"
+    },
+    "autreForm": {
+      "title": "Autre article en fil métallique",
+      "description": "Description de l'article",
+      "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
+      "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
+      "designation": "Désignation / Référence",
+      "dimensions": "Dimensions principales",
+      "quantity": "Quantité",
+      "material": "Matière",
+      "materialOptions": [
+        "Acier",
+        "Acier galvanisé",
+        "Inox",
+        "Autre"
+      ],
+      "docs": "Documents (plan, croquis, photo)",
+      "specialReq": "Exigences particulières",
+      "otherRemarks": "Autres remarques",
+      "selectPlaceholder": "-- Choisir --",
+      "sendSuccess": "Demande envoyée avec succès !",
+      "sendError": "Erreur lors de l’envoi.",
+      "networkError": "Erreur réseau.",
+      "sending": "Votre demande est en cours d'envoi, veuillez patienter...",
+      "sendRequest": "Envoyer la demande",
+      "loginToSend": "Connectez-vous pour envoyer",
+      "mainInfo": "Informations principales"
+    },
+    "categories": {
+      "title": "Gestion des catégories",
+      "searchPlaceholder": "Rechercher par FR / EN",
+      "searchAria": "Rechercher une catégorie",
+      "clearSearch": "Effacer la recherche",
+      "addButton": "Ajouter",
+      "noData": "Aucune catégorie.",
+      "errorLoad": "Erreur chargement",
+      "errorServer": "Erreur serveur",
+      "errorRequiredFR": "Le label FR est requis.",
+      "errorCreate": "Création impossible",
+      "errorUpdate": "Mise à jour impossible",
+      "errorDelete": "Suppression impossible",
+      "table": {
+        "fr": "FR",
+        "en": "EN",
+        "actions": "Actions"
+      },
+      "actions": {
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "common": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "id": "ID"
+      },
+      "placeholders": {
+        "frExample": "ex: Ressorts",
+        "enExample": "ex: Springs"
+      },
+      "add": {
+        "title": "Ajouter une catégorie",
+        "labelFR": "Label (FR)",
+        "labelEN": "Traduction (EN)",
+        "saving": "Ajout..."
+      },
+      "edit": {
+        "title": "Modifier la catégorie",
+        "saving": "Enregistrement..."
+      },
+      "delete": {
+        "title": "Supprimer la catégorie ?",
+        "confirm": "Voulez-vous vraiment supprimer cette catégorie ?",
+        "irreversible": "Cette action est irréversible",
+        "deleting": "Suppression...",
+        "delete": "Supprimer"
+      }
+    },
+    "articles": {
+      "title": "Gestion des articles",
+      "searchPlaceholder": "Rechercher (référence, désignation, n° devis)",
+      "searchAria": "Rechercher un article",
+      "clearSearch": "Effacer la recherche",
+      "addButton": "Ajouter",
+      "noData": "Aucun article.",
+      "loading": "Chargement…",
+      "loadingQuotes": "Chargement des numéros…",
+      "table": {
+        "reference": "Référence",
+        "designation": "Désignation",
+        "priceHT": "Prix HT",
+        "priceTTC": "Prix TTC",
+        "quoteNumber": "N° Devis",
+        "actions": "Actions"
+      },
+      "labels": {
+        "reference": "Référence",
+        "designation": "Désignation",
+        "priceHT": "Prix HT",
+        "quoteNumber": "N° Devis"
+      },
+      "placeholders": {
+        "refExample": "Ex: ART-001",
+        "designationExample": "Ex: Ressort compression Ø10",
+        "priceExample": "Ex: 100.00",
+        "select": "-- Sélectionner --"
+      },
+      "actions": {
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "form": {
+        "addTitle": "Ajouter un article",
+        "editTitle": "Modifier l’article",
+        "cancel": "Annuler",
+        "create": "Ajouter",
+        "update": "Mettre à jour",
+        "creating": "Création…",
+        "updating": "Mise à jour…"
+      },
+      "delete": {
+        "title": "Supprimer l’article",
+        "confirm": "Confirmez-vous la suppression de",
+        "delete": "Supprimer",
+        "deleting": "Suppression…"
+      },
+      "errors": {
+        "requiredReference": "Référence obligatoire",
+        "requiredDesignation": "Désignation obligatoire",
+        "invalidHT": "Prix HT invalide"
+      },
+      "misc": {
+        "none": "—"
+      }
+    },
+    "products": {
+      "title": "Gestion des produits",
+      "searchPlaceholder": "Rechercher par FR / EN",
+      "searchAria": "Rechercher un produit",
+      "clearSearch": "Effacer la recherche",
+      "addButton": "Ajouter",
+      "noData": "Aucun produit.",
+      "table": {
+        "category": "Catégorie",
+        "name": "Nom",
+        "description": "Description",
+        "images": "Images",
+        "actions": "Actions"
+      },
+      "actions": {
+        "expand": "Show more",
+        "collapse": "Show less",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "form": {
+        "addTitle": "Ajouter un produit",
+        "editTitle": "Modifier le produit",
+        "addHint": "Renseignez les informations ci-dessous",
+        "editHint": "Mettez à jour les informations ci-dessous",
+        "labelFR": "Label (FR)",
+        "labelEN": "Traduction (EN)",
+        "descFR": "Description (FR)",
+        "descEN": "Description (EN)",
+        "category": "Catégorie",
+        "images": "Images",
+        "replaceAll": "Remplacer toutes les images",
+        "cancel": "Annuler",
+        "create": "Enregistrer",
+        "update": "Enregistrer",
+        "creating": "Création…",
+        "updating": "Enregistrement…",
+        "dropTextAdd": "Glissez-déposez ici, ou cliquez pour sélectionner (ajout)",
+        "dropTextReplace": "Sélectionnez les nouvelles images (elles remplaceront toutes les anciennes).",
+        "removeThis": "Supprimer cette image",
+        "undoRemove": "Annuler la suppression"
+      },
+      "placeholders": {
+        "nameFr": "ex: Ressorts",
+        "nameEn": "ex: Springs",
+        "descFr": "Courte description en français",
+        "descEn": "Short description in English",
+        "selectCategory": "Choisir une catégorie"
+      },
+      "delete": {
+        "title": "Supprimer ce produit ?",
+        "confirm": "Cette action est ",
+        "irreversible": "irréversible",
+        "delete": "Supprimer",
+        "deleting": "Suppression…"
+      },
+      "gallery": {
+        "title": "Galerie d’images",
+        "open": "Voir les images",
+        "prev": "Image précédente",
+        "next": "Image suivante",
+        "goto": "Aller à l’image",
+        "image": "Image",
+        "imageAlt": "image"
+      },
+      "errors": {
+        "network": "Erreur réseau",
+        "createFailed": "Création impossible",
+        "updateFailed": "Mise à jour impossible"
+      },
+      "misc": {
+        "category": "Catégorie"
+      }
+    }
+  },
+  "profile": {
+    "userFallback": "Utilisateur",
+    "lang": {
+      "fr": "Français",
+      "en": "English"
+    },
+    "account": {
+      "title": "Compte",
+      "unknownEmail": "email inconnu",
+      "personalInfo": "Informations personnelles",
+      "companyInfo": "Informations société",
+      "fields": {
+        "lastName": "Nom",
+        "firstName": "Prénom",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "accountType": "Type de compte",
+        "loginEmail": "Email",
+        "cin": "CIN",
+        "currentPosition": "Poste actuel",
+        "matriculeFiscal": "Matricule fiscal",
+        "companyName": "Nom de la société"
+      },
+      "types": {
+        "personal": "Personnel",
+        "company": "Société",
+        "undefined": "Non défini"
+      }
+    },
+    "shortcuts": {
+      "title": "Raccourcis",
+      "home": "Accueil",
+      "homeHint": "Retour à l’accueil",
+      "claimsHint": "Mes réclamations",
+      "orders": "Mes commandes",
+      "claims": "Mes réclamations",
+      "ordersHint": "Historique & suivi",
+      "help": "Aide & support",
+      "helpHint": "FAQ, contact",
+      "security": "Sécurité",
+      "securityHint": "Info compte en lecture seule"
+    },
+    "settings": {
+      "title": "Paramètres de l’application",
+      "language": "Langue",
+      "languageHint": "Changer la langue du site"
+    },
+    "about": {
+      "title": "À propos",
+      "text": "MTR Industry — Espace client. Version 1.0"
+    },
+    "loading": "Chargement…"
+  },
+  "support": {
+    "title": "Aide & Support",
+    "intro": "Besoin d’aide ? Consultez notre FAQ ou contactez notre équipe.",
+    "faq": {
+      "title": "Questions fréquentes",
+      "q1": {
+        "t": "Comment changer mon mot de passe ?",
+        "a": "Allez dans Paramètres > Sécurité puis cliquez sur « Modifier mon mot de passe »."
+      },
+      "q2": {
+        "t": "Je n’arrive pas à me connecter, que faire ?",
+        "a": "Vérifiez votre email et mot de passe. Si le problème persiste, utilisez « Mot de passe oublié »."
+      },
+      "q3": {
+        "t": "Comment contacter l’assistance ?",
+        "a": "Vous pouvez nous écrire par email, téléphone ou chat en direct."
+      }
+    },
+    "contact": {
+      "title": "Nous contacter",
+      "email": "support@mtr.com",
+      "phone": "+216 71 234 567",
+      "chat": "Chat en direct (9h–18h)"
+    },
+    "resources": {
+      "title": "Ressources utiles",
+      "guide": "Guide d’utilisation",
+      "faq": "Centre de FAQ complet",
+      "privacy": "Politique de confidentialité"
+    }
+  },
+  "devisAutre": {
+    "title": "Demande de devis – Autres Types",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "errors": {
+      "pdfUnavailable": "PDF non disponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document non disponible.",
+      "docOpenError": "Impossible d’ouvrir le document."
+    }
+  },
+  "devisCompression": {
+    "title": "Demande de devis – Ressort de Compression",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "errors": {
+      "pdfUnavailable": "PDF non disponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document non disponible.",
+      "docOpenError": "Impossible d’ouvrir le document."
+    }
+  },
+  "devisFil": {
+    "title": "Demande de devis – Fil Dressé / coupé",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "errors": {
+      "pdfUnavailable": "PDF non disponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document non disponible.",
+      "docOpenError": "Impossible d’ouvrir le document."
+    }
+  },
+  "devisGrille": {
+    "title": "Demande de devis – Grille métallique",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "errors": {
+      "pdfUnavailable": "PDF indisponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document indisponible.",
+      "docOpenError": "Impossible d’ouvrir le document."
+    }
+  },
+  "devisTorsion": {
+    "title": "Demande de devis – Ressort de Torsion",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "attachmentsOpenAria": "Ouvrir le fichier {index}",
+    "errors": {
+      "pdfUnavailable": "PDF non disponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document non disponible.",
+      "docOpenError": "Impossible d’ouvrir le document."
+    }
+  },
+  "devisTraction": {
+    "title": "Demande de devis – Ressort de Traction",
+    "searchPlaceholder": "Rechercher par N°, client ou date…",
+    "searchAria": "Rechercher une demande de devis",
+    "clearSearch": "Effacer la recherche",
+    "noData": "Aucune demande de devis",
+    "columns": {
+      "number": "N°",
+      "client": "Client",
+      "date": "Date",
+      "pdf": "PDF DDV",
+      "attachments": "Fichiers joints"
+    },
+    "open": "Ouvrir",
+    "attachmentsOpenAria": "Ouvrir le fichier {index}",
+    "errors": {
+      "pdfUnavailable": "PDF non disponible.",
+      "pdfOpenError": "Impossible d’ouvrir le PDF.",
+      "docUnavailable": "Document non disponible.",
+      "docOpenError": "Impossible d’ouvrir le document.",
+      "network": "Erreur réseau"
+    }
+  },
+  "pagination": {
+    "showing": "Affichage",
+    "of": "sur",
+    "perPage": "Par page",
+    "prev": "Page précédente",
+    "next": "Page suivante"
+  }
+}
