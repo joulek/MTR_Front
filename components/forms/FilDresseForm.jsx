@@ -230,8 +230,14 @@ export default function FilDresseForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">
+                {t("dropHere")}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                {t("4files")}
+              </p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">

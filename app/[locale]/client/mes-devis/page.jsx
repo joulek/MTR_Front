@@ -31,8 +31,7 @@ function writeOrdered(map) {
 }
 /* ------------------------------------------------- */
 
-/* === Chip “Ouvrir” (icône lien, hover jaune, icône qui glisse) === */
-/* === Chip “Ouvrir” : bordure JAUNE + hover inchangé === */
+/* === Chip “Ouvrir” : bordure JAUNE + hover === */
 function OpenChip({ onClick, label = "Ouvrir", tooltip, className = "" }) {
   return (
     <button
@@ -43,10 +42,8 @@ function OpenChip({ onClick, label = "Ouvrir", tooltip, className = "" }) {
       className={[
         "group inline-flex items-center gap-1.5 rounded-full",
         "px-3 py-1 text-sm font-medium",
-        // bordure jaune par défaut
         "bg-white/80 backdrop-blur border border-[#F5B301] text-[#0B1E3A]",
         "shadow-[0_1px_0_rgba(0,0,0,0.03)]",
-        // hover: fond jaune léger (on garde l’animation)
         "hover:bg-[#F5B301]/10",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5B301]/60",
         "transition-colors duration-200 active:scale-[0.98]",
@@ -61,7 +58,6 @@ function OpenChip({ onClick, label = "Ouvrir", tooltip, className = "" }) {
     </button>
   );
 }
-
 
 export default function MesDevisPage() {
   const t = useTranslations("auth.client.quotesPage");
@@ -78,7 +74,7 @@ export default function MesDevisPage() {
   // { [demandeId]: { numero, pdf } }
   const [devisMap, setDevisMap] = useState({});
 
-  // état commande
+
   const [ordered, setOrdered] = useState({});
   const [placing, setPlacing] = useState({});
 
@@ -345,23 +341,21 @@ export default function MesDevisPage() {
   const pageItems = filtered.slice(pageStart, pageStart + pageSize);
 
   /* --------- UI cellules --------- */
+  // ✅ CORRIGÉ : affiche un bouton “Ouvrir” par fichier (1, 2, 3, 4…)
   const FilesCell = ({ it }) => {
     const files = Array.isArray(it.files) ? it.files : [];
-    if (files.length === 0) return <span className="text-slate-400">—</span>;
-    const shown = files.slice(0, 2);
-    const extra = files.length - shown.length;
+    if (!files.length) return <span className="text-slate-400">—</span>;
     return (
       <div className="flex flex-wrap gap-2">
-        {shown.map((f, i) => (
+        {files.map((f, i) => (
           <OpenChip
-            key={i}
+            key={f._id || f.name || i}
             onClick={() => openDoc(it, f, f.index ?? i)}
             label="Ouvrir"
             tooltip={f?.name || "Fichier joint"}
             className="!px-3 !py-1"
           />
         ))}
-        {extra > 0 && <span className="text-xs text-slate-600">+{extra}</span>}
       </div>
     );
   };
@@ -512,13 +506,12 @@ export default function MesDevisPage() {
                       Demande de devis
                     </div>
                   </th>
-                 
                   <th className="p-3 text-left">
                     <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">
                       {t("table.files")}
                     </div>
                   </th>
-                   <th className="p-3 text-left">
+                  <th className="p-3 text-left">
                     <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">
                       Devis
                     </div>
@@ -560,11 +553,10 @@ export default function MesDevisPage() {
                           <span className="text-slate-400">—</span>
                         )}
                       </td>
-                    
                       <td className="p-3 align-top">
                         <FilesCell it={it} />
                       </td>
-                        <td className="p-3 align-top">
+                      <td className="p-3 align-top">
                         {existeDevis ? (
                           <OpenChip
                             onClick={() => openDevisPdf(it._id)}

@@ -6,7 +6,7 @@ import Image from "next/image";
 import torsionImg from "@/public/devis/torsion.png";
 
 /* --- petite étoile rouge pour champs requis --- */
-const RequiredMark = () => <span className="text-red-500" aria-hidden="true"> *</span>;
+const RequiredMark = () => <span className="text-red-500" aria-hidden> *</span>;
 
 export default function TorsionForm() {
   const t = useTranslations("auth.torsionForm");
@@ -24,22 +24,47 @@ export default function TorsionForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // i18n options (affichage seulement)
-  const materialOptions = t.raw("materialOptions") || [];
-  const windingOptions = t.raw("windingOptions") || []; // enroulement
-  const orientationOptions = t.raw("orientationOptions") || []; // optionnel
+  // ----- i18n options (affichage) -----
+  const windingOptions = t.raw("windingOptions") || [];
   const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
 
+  // On récupère la liste i18n et on EXPLOSE un éventuel item “(SM, SH)” en 2 choix distincts.
+  const materialOptionsUI = (() => {
+    const raw = t.raw("materialOptions") || [];
+    const fallback = ["Fil ressort noir SH", "Fil ressort noir SM", "Fil ressort galvanisé", "Fil ressort inox"];
+    const list = raw.length ? raw : fallback;
+
+    const out = [];
+    for (const label of list) {
+      const s = String(label);
+      const looksCombined = /\bSM\b.*\bSH\b|\bSH\b.*\bSM\b|SM\/SH|SM,\s*SH/i.test(s);
+      if (looksCombined) {
+        // Déterminer langue du libellé pour l’UI
+        const isEN = /black|spring wire/i.test(s);
+        if (isEN) {
+          out.push("Black spring wire SH", "Black spring wire SM");
+        } else {
+          out.push("Fil ressort noir SH", "Fil ressort noir SM");
+        }
+      } else {
+        out.push(s);
+      }
+    }
+    // Nettoyage doublons éventuels
+    return Array.from(new Set(out));
+  })();
+
   // --------------------------------------------------------------------
-  //  ✅ Ajout minimal : mapping des labels EN -> valeurs FR attendues
-  //     (aucun changement d’UI, on convertit juste avant l’envoi)
+  //  ✅ Normalisation EN/variantes -> FR EXACT (valeurs backend)
   const FR_MATIERES = [
-    "Fil ressort noir (SM, SH)",
+    "Fil ressort noir SH",
+    "Fil ressort noir SM",
     "Fil ressort galvanisé",
     "Fil ressort inox",
   ];
   const EN_MATIERES = [
-    "Black spring wire (SM, SH)",
+    "Black spring wire SH",
+    "Black spring wire SM",
     "Galvanized spring wire",
     "Stainless steel spring wire",
   ];
@@ -47,32 +72,21 @@ export default function TorsionForm() {
   const FR_ENROULEMENTS = ["Enroulement gauche", "Enroulement droite"];
   const EN_ENROULEMENTS = ["Left winding", "Right winding"];
 
-  // Certains projets ont aussi des types d’accrochage sur torsion :
-  const FR_ACCROCHAGES = [
-    "Anneau Allemand",
-    "Double Anneau Allemand",
-    "Anneau tangent",
-    "Anneau allongé",
-    "Boucle Anglaise",
-    "Anneau tournant",
-    "Conification avec vis",
-  ];
-  const EN_ACCROCHAGES = [
-    "German hook",
-    "Double German hook",
-    "Tangent hook",
-    "Extended hook",
-    "English loop",
-    "Swivel hook",
-    "Conical with screw",
-  ];
-
-  // Petits synonymes tolérés
+  // Synonymes tolérés
   const EXTRA_SYNONYMS = {
     matiere: {
-      "acier inoxydable": "Fil ressort inox",
-      inox: "Fil ressort inox",
+      // variantes FR
+      "fil ressort noir (sm, sh)": "Fil ressort noir SH", // fallback → SH
+      "fil ressort noir sm/sh": "Fil ressort noir SH",
+      // variantes courtes
+      "noir sh": "Fil ressort noir SH",
+      "noir sm": "Fil ressort noir SM",
+      // EN raccourcis
+      "black sh": "Fil ressort noir SH",
+      "black sm": "Fil ressort noir SM",
       galvanized: "Fil ressort galvanisé",
+      inox: "Fil ressort inox",
+      "stainless": "Fil ressort inox",
     },
     enroulement: {
       gauche: "Enroulement gauche",
@@ -88,19 +102,20 @@ export default function TorsionForm() {
     if (frList.includes(v)) return; // déjà FR exact
 
     // Essai 1: correspondance exacte EN
-    const i = enList.indexOf(v);
+    let i = enList.indexOf(v);
     if (i >= 0) {
       fd.set(name, frList[i]);
       return;
     }
-    // Essai 2: en lower-case
+    // Essai 2: lower-case
     const low = String(v).toLowerCase().trim();
-    const iLow = enList.map(s => s.toLowerCase()).indexOf(low);
-    if (iLow >= 0) {
-      fd.set(name, frList[iLow]);
+    const enLow = enList.map(s => s.toLowerCase());
+    i = enLow.indexOf(low);
+    if (i >= 0) {
+      fd.set(name, frList[i]);
       return;
     }
-    // Essai 3: synonymes
+    // Essai 3: synonymes libres
     if (extras[low]) fd.set(name, extras[low]);
   }
   function normalizeDual(fd, baseName, frList, enList, extras = {}) {
@@ -168,16 +183,14 @@ export default function TorsionForm() {
     setLoading(true);
     try {
       const fd = new FormData(form);
-      fd.append("type", "torsion");  // pour info côté back si besoin
+      fd.append("type", "torsion");
 
       const userId = localStorage.getItem("id");
       if (userId) fd.append("user", userId);
 
-      // ✅ Normalisation EN -> FR (aucun changement d’UI, seulement la donnée envoyée)
+      // ✅ Normalisation vers les valeurs FR exactes attendues par le backend
       normalizeDual(fd, "matiere", FR_MATIERES, EN_MATIERES, EXTRA_SYNONYMS.matiere);
       normalizeDual(fd, "enroulement", FR_ENROULEMENTS, EN_ENROULEMENTS, EXTRA_SYNONYMS.enroulement);
-      // si ton form inclut aussi typeAccrochage pour torsion :
-      normalizeDual(fd, "typeAccrochage", FR_ACCROCHAGES, EN_ACCROCHAGES);
 
       const res = await fetch("/api/devis/torsion", {
         method: "POST",
@@ -247,13 +260,17 @@ export default function TorsionForm() {
           <Input name="L1" label={t("L1")} required />
           <Input name="L2" label={t("L2")} required />
           <Input name="quantite" label={t("quantity")} type="number" min="1" required />
+
+          {/* Matière: UI avec SH / SM distincts */}
           <SelectBase
             name="matiere"
             label={t("material")}
-            options={materialOptions}
+            options={materialOptionsUI}
             placeholder={selectPlaceholder}
             required
           />
+
+          {/* Enroulement */}
           <SelectBase
             name="enroulement"
             label={t("windingDirection")}
@@ -261,19 +278,12 @@ export default function TorsionForm() {
             placeholder={selectPlaceholder}
             required
           />
-          {/* Optionnel : orientation si je l’utilises côté i18n (non requise par le schéma) */}
-          {orientationOptions.length > 0 && (
-            <SelectBase
-              name="orientation"
-              label={t("orientation")}
-              options={orientationOptions}
-              placeholder={selectPlaceholder}
-            />
-          )}
+
+          {/* Champ "orientation" supprimé */}
         </div>
 
         {/* Fichiers */}
-        <SectionTitle className="mt-8">{t("docs")} <RequiredMark /></SectionTitle>
+        <SectionTitle className="mt-8">{t("docs")} </SectionTitle>
         <p className="text-sm text-gray-500 mb-3">
           {t("acceptedTypes")}
         </p>
@@ -288,9 +298,14 @@ export default function TorsionForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}
-            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">
+                {t("dropHere")}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                {t("4files")}
+              </p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">
@@ -345,10 +360,7 @@ export default function TorsionForm() {
           {/* ALERTES SOUS LE BOUTON */}
           <div ref={alertRef} aria-live="polite" className="mt-3">
             {loading ? (
-              <Alert
-                type="info"
-                message="Votre demande de devis est en cours d'envoi, veuillez patienter…"
-              />
+              <Alert type="info" message="Votre demande de devis est en cours d'envoi, veuillez patienter…" />
             ) : err ? (
               <Alert type="error" message={err} />
             ) : ok ? (

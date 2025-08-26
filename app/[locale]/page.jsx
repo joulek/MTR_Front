@@ -35,19 +35,19 @@ function slugify(s = "") {
 /* ---------- Anim helpers (révélations entre sections) ---------- */
 const vSection = {
   hidden: { opacity: 0, y: 24 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 const vStagger = {
   hidden: {},
-  show:   { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 const vItemUp = {
   hidden: { opacity: 0, y: 18 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
-const vLeft  = { hidden: { opacity: 0, x: -30 }, show: { opacity: 1, x: 0, transition: { duration: .55 } } };
-const vRight = { hidden: { opacity: 0, x:  30 }, show: { opacity: 1, x: 0, transition: { duration: .55 } } };
-const vZoom  = { hidden: { opacity: 0, scale: .96 }, show: { opacity: 1, scale: 1, transition: { duration: .6 } } };
+const vLeft = { hidden: { opacity: 0, x: -30 }, show: { opacity: 1, x: 0, transition: { duration: .55 } } };
+const vRight = { hidden: { opacity: 0, x: 30 }, show: { opacity: 1, x: 0, transition: { duration: .55 } } };
+const vZoom = { hidden: { opacity: 0, scale: .96 }, show: { opacity: 1, scale: 1, transition: { duration: .6 } } };
 
 /* ---------- Label flottant (commun aux 4 champs) ---------- */
 const labelFloat =
@@ -248,7 +248,7 @@ export default function HomeMTR() {
     <div className="min-h-screen bg-white text-slate-800">
       <SiteHeader />
 
-      {/* HERO (fade-in au chargement) */}
+      {/* HERO */}
       <section
         id="accueil"
         className="relative -mt-10 min-h-[86vh] flex items-center justify-center bg-cover bg-center md:bg[center_top] text-white"
@@ -414,7 +414,7 @@ export default function HomeMTR() {
             const count = categories.length;
             const gridCols = count === 4 ? "sm:grid-cols-2 lg:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3";
             return (
-              <motion.div className={`grid gap-6 ${gridCols}`} variants={vStagger} initial="hidden" whileInView="show" viewport={{ once:false, amount:.15 }}>
+              <motion.div className={`grid gap-6 ${gridCols}`} variants={vStagger} initial="hidden" whileInView="show" viewport={{ once: false, amount: .15 }}>
                 {categories.map((c) => {
                   const title = pickName(c, locale);
                   const raw = c?.image?.url || "";
@@ -500,7 +500,7 @@ export default function HomeMTR() {
               </ul>
 
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                {["Automobile","Électroménager","Agriculture","Électricité","Bâtiment","Sports & loisirs"].map((t) => (
+                {["Automobile", "Électroménager", "Agriculture", "Électricité", "Bâtiment", "Sports & loisirs"].map((t) => (
                   <span key={t} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">{t}</span>
                 ))}
               </div>
@@ -640,11 +640,12 @@ export default function HomeMTR() {
       {/* FOOTER */}
       <footer className="relative mt-0 bg-[#0B2239] text-white">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_20%_10%,rgba(255,255,255,0.05),transparent),radial-gradient(50%_40%_at_80%_60%,rgba(245,179,1,0.08),transparent)]" />
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 md:grid-cols-4">
+        {/* ↓↓↓ grille passée à 3 colonnes (newsletter supprimée) */}
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 py-14 md:grid-cols-3">
           <div>
             <h4 className="text-xl font-extrabold">MTR</h4>
             <p className="mt-3 max-w-xs text-sm text-white/80">
-              Manufacture Tunisienne des Ressorts — qualité, précision et fiabilité depuis 1994.
+              Manufacture Tunisienne des Ressorts.
             </p>
             <div className="mt-5 flex items-center gap-3">
               <a href="https://www.facebook.com/profile.php?id=100076355199317&locale=fr_FR" target="_blank" rel="noopener noreferrer" className="rounded-full bg-white/10 p-2 hover:bg-white/20">
@@ -664,12 +665,21 @@ export default function HomeMTR() {
           <div>
             <h5 className="text-lg font-semibold">Company</h5>
             <ul className="mt-4 space-y-3 text-sm text-white/80">
-              {[{ label: "À propos", href: "#presentation" }, { label: "Produits", href: "#specialites" }, { label: "Demande de devis", href: "#contact" }].map((l, i) => (
+              {[
+                { label: "À propos", id: "apropos" },
+                { label: "Produits", id: "specialites" },
+                { label: "Demande de devis", href: `/${locale}/devis` },
+              ].map((l, i) => (
                 <li key={i}>
-                  <a href={l.href} className="group inline-flex items-center gap-2 hover:text-[#F5B301]">
+                  <button
+                    onClick={() =>
+                      document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
+                  >
                     <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
                     {l.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -678,24 +688,34 @@ export default function HomeMTR() {
           <div>
             <h5 className="text-lg font-semibold">Ressources</h5>
             <ul className="mt-4 space-y-3 text-sm text-white/80">
-              {[{ label: "Help Desk", href: "#contact" }, { label: "Catalogue", href: "#specialites" }, { label: "Contact", href: "#contact" }].map((l, i) => (
+              {[
+                { label: "Help Desk", href: `/${locale}/help-desk` },
+                { label: "Catalogue", id: "specialites" },
+                { label: "Contact", id: "contact" },
+              ].map((l, i) => (
                 <li key={i}>
-                  <a href={l.href} className="group inline-flex items-center gap-2 hover:text-[#F5B301]">
-                    <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
-                    {l.label}
-                  </a>
+                  {l.href ? (
+                    <Link
+                      href={l.href}
+                      className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
+                    >
+                      <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
+                      {l.label}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })
+                      }
+                      className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
+                    >
+                      <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
+                      {l.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div>
-            <h5 className="text-lg font-semibold">S’abonner à la newsletter</h5>
-            <p className="mt-3 text-sm text-white/80">Recevez nos nouveautés produits et conseils techniques.</p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-4 flex gap-2">
-              <input type="email" placeholder="Votre e-mail" className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder-white/60 outline-none focus:border-[#F5B301]" />
-              <button className="rounded-full bg-[#F5B301] px-5 py-3 text-sm font-semibold text-[#0B2239]">S’abonner</button>
-            </form>
           </div>
         </div>
 
@@ -703,9 +723,18 @@ export default function HomeMTR() {
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-sm text-white/80 md:flex-row">
             <p>© {new Date().getFullYear()} MTR. Tous droits réservés.</p>
             <div className="flex items-center gap-4">
-              <a href="#apropos" className="hover:text-[#F5B301]">À propos</a>
-              <a href="#contact" className="hover:text-[#F5B301]">Help Desk</a>
-              <a href="#" className="hover:text-[#F5B301]">Privacy Policy</a>
+              <button
+                onClick={() => document.getElementById("apropos")?.scrollIntoView({ behavior: "smooth" })}
+                className="hover:text-[#F5B301]"
+              >
+                À propos
+              </button>
+              <Link href={`/${locale}/help-desk`} className="hover:text-[#F5B301]">
+                Help Desk
+              </Link>
+              <Link href={`/${locale}/privacy-policy`} className="hover:text-[#F5B301]">
+                Privacy Policy
+              </Link>
             </div>
           </div>
         </div>

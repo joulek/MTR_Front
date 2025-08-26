@@ -78,13 +78,16 @@ export default function TractionForm() {
   }
 
   // ========= AJOUT MINIMAL : normalisation EN -> FR exact attendu par le backend =========
+  // ⚠️ SM et SH séparés
   const EN_MAT = [
-    "Black spring wire (SM, SH)",
+    "Black spring wire (SM)",
+    "Black spring wire (SH)",
     "Galvanized spring wire",
     "Stainless steel spring wire",
   ];
   const FR_MAT = [
-    "Fil ressort noir (SM, SH)",
+    "Fil ressort noir (SM)",
+    "Fil ressort noir (SH)",
     "Fil ressort galvanisé",
     "Fil ressort inox",
   ];
@@ -115,8 +118,15 @@ export default function TractionForm() {
 
   // Synonymes possibles saisis côté UI
   const EXTRA = {
-    MAT: { "acier inoxydable": "Fil ressort inox" },
-    WIND: { "droite": "Enroulement droite", "gauche": "Enroulement gauche" },
+    MAT: {
+      "acier inoxydable": "Fil ressort inox",
+      "fil ressort noir (sm)": "Fil ressort noir (SM)",
+      "fil ressort noir (sh)": "Fil ressort noir (SH)",
+      "black spring wire (sm)": "Fil ressort noir (SM)",
+      "black spring wire (sh)": "Fil ressort noir (SH)",
+      galvanized: "Fil ressort galvanisé",
+    },
+    WIND: { droite: "Enroulement droite", gauche: "Enroulement gauche", left: "Enroulement gauche", right: "Enroulement droite" },
   };
 
   function normalizeByIndex(fd, name, EN, FR) {
@@ -183,9 +193,9 @@ export default function TractionForm() {
       if (res.ok) {                         // ✅ 200/201 = succès
         finishedRef.current = true;
         setErr("");
-        setOk("Demande confirmée. Merci !"); // ← ton message succès
+        setOk("Demande confirmée. Merci !");
 
-        form.reset();                       // ✅ utiliser la variable 'form'
+        form.reset();
         setFiles([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
@@ -196,7 +206,6 @@ export default function TractionForm() {
       setErr(msg);
     } catch (e) {
       console.error("submit traction error:", e);
-      // ⛔️ ne pas écraser un succès déjà posé
       if (!finishedRef.current) {
         const isAbort = e?.name === "AbortError";
         setErr(isAbort ? "Délai dépassé, réessayez." : "Erreur réseau.");
@@ -336,7 +345,7 @@ export default function TractionForm() {
           </div>
         </div>
 
-        <SectionTitle className="mt-8">{t("docs")} <RequiredMark /></SectionTitle>
+        <SectionTitle className="mt-8">{t("docs")} </SectionTitle>
         <p className="text-sm text-gray-500 mb-3">
           {t("acceptedTypes")}
         </p>
@@ -351,9 +360,14 @@ export default function TractionForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}
-            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">
+                {t("dropHere")}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                {t("4files")}
+              </p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">

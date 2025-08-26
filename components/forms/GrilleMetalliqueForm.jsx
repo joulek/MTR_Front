@@ -1,7 +1,7 @@
 // components/forms/GrilleMetalliqueForm.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import Image from "next/image";
 import grilleImg from "@/public/devis/grille.png";
 
@@ -10,6 +10,7 @@ const RequiredMark = () => <span className="text-red-500" aria-hidden="true"> *<
 
 export default function GrilleMetalliqueForm() {
   const t = useTranslations("auth.grilleForm");
+  const locale = useLocale();
 
   const [loading, setLoading] = useState(false);
   const [ok, setOk] = useState("");
@@ -24,31 +25,46 @@ export default function GrilleMetalliqueForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // i18n options
-  const materialOptions = t.raw("materialChecks") || ["Acier galvanisé", "Acier Noir"];
-  const finishOptions = t.raw("finishChecks") || ["Zingage", "Peinture", "Aucun"];
+  // i18n options (protégées : pas d'appel t.raw si la clé manque)
+  const materialOptions = t.has("materialChecks")
+    ? t.raw("materialChecks")
+    : (locale === "en"
+        ? ["Galvanized steel", "Black steel", "Stainless steel"]
+        : ["Acier galvanisé", "Acier Noir", "Inox"]);
+
+  const finishOptions = t.has("finishChecks")
+    ? t.raw("finishChecks")
+    : (locale === "en"
+        ? ["Painting", "Chrome plating", "Galvanization", "Other"]
+        : ["Peinture", "Chromage", "Galvanisation", "Autre"]);
+
   const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
 
-  // --- AJOUT MINIMAL : normaliser EN -> FR au moment de l’envoi (aucun impact UI) ---
+  // --- Normaliser EN -> FR au moment de l’envoi (aucun impact UI) ---
   const FR_MAT = ["Acier galvanisé", "Acier Noir", "Inox"];
   const EN_TO_FR_MAT = [
     { fr: "Acier galvanisé", en: ["Galvanized steel", "Galvanized steel wire", "Galvanised steel", "Galvanised steel wire", "Galvanization steel"] },
-    { fr: "Acier Noir", en: ["Black steel", "Black steel wire", "Blackened steel"] },
-    { fr: "Inox", en: ["Stainless steel", "Stainless steel wire", "Inox", "Stainless"] },
+    { fr: "Acier Noir",      en: ["Black steel", "Black steel wire", "Blackened steel"] },
+    { fr: "Inox",            en: ["Stainless steel", "Stainless steel wire", "Inox", "Stainless"] },
   ];
-  const FR_FIN = ["Zingage", "Peinture", "Aucun"];
+
+  // ⚠️ Ici on fixe la liste FR canonique attendue par le backend (ne surtout pas la lier à finishOptions)
+  const FR_FIN = ["Peinture", "Chromage", "Galvanisation", "Autre"];
   const EN_TO_FR_FIN = [
-    { fr: "Zingage", en: ["Zinc plating", "Galvanizing", "Galvanising", "Galvanization", "Galvanisation"] },
-    { fr: "Peinture", en: ["Painting", "Painted", "Paint"] },
-    { fr: "Aucun", en: ["None", "No finish", "Without finish"] },
+    { fr: "Peinture",      en: ["Painting", "Painted", "Paint", "Coating", "Paint coat"] },
+    { fr: "Chromage",      en: ["Chrome plating", "Chrome-plating", "Chromium plating", "Chroming", "Chromed", "Chrome"] },
+    { fr: "Galvanisation", en: ["Galvanization", "Galvanising", "Galvanizing", "Zinc plating", "Zinc-plating", "Hot-dip galvanizing", "Hot dip galvanizing", "Galvanized", "Galvanised"] },
+    { fr: "Autre",         en: ["Other", "None", "No finish", "Without finish"] },
   ];
+
   function normalizeOne(fd, name, frList, groups) {
     const v = fd.get(name);
     if (!v) return;
-    if (frList.includes(v)) return; // déjà FR
+    // déjà FR exact → rien à faire
+    if (frList.includes(v)) return;
     const low = String(v).toLowerCase().trim();
     for (const { fr, en } of groups) {
-      if (en.some(e => e.toLowerCase() === low)) {
+      if (Array.isArray(en) && en.some(e => String(e).toLowerCase().trim() === low)) {
         fd.set(name, fr);
         return;
       }
@@ -83,7 +99,7 @@ export default function GrilleMetalliqueForm() {
     setFiles(arr);
     if (fileInputRef.current) {
       const dt = new DataTransfer();
-      arr.forEach((f) => dt.items.add(f));
+      arr.forEach(f => dt.items.add(f));
       fileInputRef.current.files = dt.files;
     }
   }
@@ -119,7 +135,7 @@ export default function GrilleMetalliqueForm() {
       if (userId) fd.append("user", userId);
 
       // ✅ Normalisation (si l’utilisateur est en EN)
-      normalizeOne(fd, "matiere", FR_MAT, EN_TO_FR_MAT);
+      normalizeOne(fd, "matiere",  FR_MAT, EN_TO_FR_MAT);
       normalizeOne(fd, "finition", FR_FIN, EN_TO_FR_FIN);
 
       const res = await fetch("/api/devis/grille", {
@@ -163,7 +179,6 @@ export default function GrilleMetalliqueForm() {
         <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-[#002147]">
           {t("title")}
         </h2>
-
       </div>
 
       <form onSubmit={onSubmit}>
@@ -212,8 +227,8 @@ export default function GrilleMetalliqueForm() {
         {/* Fichiers */}
         <SectionTitle className="mt-8">{t("docs")} <RequiredMark /></SectionTitle>
         <p className="text-sm text-gray-500 mb-3">
-          {t("acceptedTypes")}       
-           </p>
+          {t("acceptedTypes")}
+        </p>
 
         <label
           htmlFor="docs"
@@ -225,14 +240,20 @@ export default function GrilleMetalliqueForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">
+                {t("dropHere")}
+              </p>
+              <p className="text-sm text-gray-500 mb-3">
+                {t("4files")}
+              </p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">
                 {files.length} fichier{files.length > 1 ? "s" : ""} sélectionné{files.length > 1 ? "s" : ""} :
               </p>
-              <p className="mx-auto max-w-[900px] truncate text-[15px] text-[#002147]">
+              <p className="mx-auto max-w-[900px] truncate text:[15px] text-[#002147]">
                 {files.map((f) => f.name).join(", ")}
               </p>
               <p className="text-xs text-[#002147]/70 mt-1">

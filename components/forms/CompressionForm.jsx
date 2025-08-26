@@ -25,20 +25,25 @@ export default function CompressionForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // --------- 🔁 i18n OPTIONS (labels) + ✅ valeurs ENUM attendues par le backend ----------
-  // Matériaux: valeurs FR stables (ENUM backend) + labels traduits (EN/FR) alignés par index
+  /* ---------- i18n OPTIONS (labels) + valeurs envoyées au backend ---------- */
+  // ✅ Valeurs stables attendues par le backend (SM et SH séparés)
   const MATERIAL_VALUES = [
-    "Fil ressort noir (SM, SH)",
+    "Fil ressort noir SH",
+    "Fil ressort noir SM",
     "Fil ressort galvanisé",
     "Fil ressort inox",
   ];
-  const materialLabels = t.raw("materialOptions") || MATERIAL_VALUES;
+
+  // Labels affichés (traductions) — si non fournis on affiche les valeurs ci-dessus
+  let materialLabels = t.raw("materialOptions");
+  if (!Array.isArray(materialLabels) || materialLabels.length < MATERIAL_VALUES.length) {
+    materialLabels = MATERIAL_VALUES;
+  }
   const materialOptions = MATERIAL_VALUES.map((value, i) => ({
     value,
     label: materialLabels[i] ?? value,
   }));
 
-  // Enroulement: valeurs FR stables (ENUM backend) + labels traduits (EN/FR)
   const WIND_VALUES = ["Enroulement gauche", "Enroulement droite"];
   const windLabels = t.raw("windingOptions") || WIND_VALUES;
   const windOptions = WIND_VALUES.map((value, i) => ({
@@ -46,7 +51,6 @@ export default function CompressionForm() {
     label: windLabels[i] ?? value,
   }));
 
-  // Extrémités: mêmes codes en label et value (ERM/EL/ELM/ERNM)
   const EXTREMITIES = ["ERM", "EL", "ELM", "ERNM"];
   const extremityLabels = t.raw("extremityOptions") || EXTREMITIES;
   const extremityOptions = EXTREMITIES.map((value, i) => ({
@@ -55,7 +59,7 @@ export default function CompressionForm() {
   }));
 
   const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
-  // --------------------------------------------------------------------------------------
+  /* ------------------------------------------------------------------------ */
 
   // Récup session
   useEffect(() => {
@@ -117,14 +121,14 @@ export default function CompressionForm() {
       const userId = localStorage.getItem("id");
       if (userId) fd.append("user", userId);
 
-      // (Sécurité) Normalisation si une page enverrait un label au lieu d'une valeur :
+      // Normalisation de sécurité (si un label est renvoyé à la place de la valeur)
       const mat = fd.get("matiere");
       const wind = fd.get("enroulement");
       const ext = fd.get("extremite");
-      // Si la valeur n'est pas une des valeurs FR attendues, tente de retomber sur la valeur FR par index
+
       if (!MATERIAL_VALUES.includes(mat)) {
         const i = materialLabels.indexOf(mat);
-        if (i >= 0) fd.set("matiere", MATERIAL_VALUES[i]);
+        if (i >= 0 && MATERIAL_VALUES[i]) fd.set("matiere", MATERIAL_VALUES[i]);
       }
       if (!WIND_VALUES.includes(wind)) {
         const i = windLabels.indexOf(wind);
@@ -142,9 +146,7 @@ export default function CompressionForm() {
       });
 
       let payload = null;
-      try {
-        payload = await res.json();
-      } catch { }
+      try { payload = await res.json(); } catch {}
 
       if (res.ok) {
         finishedRef.current = true;
@@ -202,27 +204,27 @@ export default function CompressionForm() {
           <Input name="DI" label={t("diameterInt")} required />
           <Input name="Lo" label={t("freeLength")} required />
           <Input name="nbSpires" label={t("totalCoils")} required />
-          <Input name="pas" label={t("pitch")} />
+          <Input name="pas" label={t("pitch")} required />
           <Input name="quantite" label={t("quantity")} type="number" min="1" required />
 
           <SelectBase
             name="matiere"
             label={t("material")}
-            options={materialOptions}   // [{value,label}]
+            options={materialOptions}
             placeholder={selectPlaceholder}
             required
           />
           <SelectBase
             name="enroulement"
             label={t("windingDirection")}
-            options={windOptions}       // [{value,label}]
+            options={windOptions}
             placeholder={selectPlaceholder}
             required
           />
           <SelectBase
             name="extremite"
             label={t("extremityType")}
-            options={extremityOptions}  // [{value,label}]
+            options={extremityOptions}
             placeholder={selectPlaceholder}
             required
           />
@@ -238,10 +240,8 @@ export default function CompressionForm() {
           />
         </div>
 
-        <SectionTitle className="mt-8">{t("docs")} <RequiredMark /></SectionTitle>
-        <p className="text-sm text-gray-500 mb-3">
-          {t("acceptedTypes")}
-        </p>
+        <SectionTitle className="mt-8">{t("docs")}</SectionTitle>
+        <p className="text-sm text-gray-500 mb-3">{t("acceptedTypes")}</p>
 
         <label
           htmlFor="docs"
@@ -253,9 +253,10 @@ export default function CompressionForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}
-            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">{t("dropHere")}</p>
+              <p className="text-sm text-gray-500 mb-3">{t("4files")}</p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">

@@ -157,7 +157,7 @@
         "compression": " Ressort de Compression",
         "traction": " Ressort de Traction",
         "torsion": " Ressort de Torsion",
-        "fil": " Fil dressé / coupé",
+        "fil": " Fil dressé coupé",
         "grille": " Grille métallique",
         "autre": " Autre article en fil métallique"
       }
@@ -166,6 +166,7 @@
       "title": " Ressorts de Traction",
       "diameterWire": "Diamètre du fil (d)",
       "schema": "Schéma",
+      "4files": "Maximum 4 fichiers",
       "maindim": "Spécifications principales",
       "diameterExt": "Diamètre extérieur (De)",
       "freeLength": "Longueur libre (Lo)",
@@ -176,7 +177,8 @@
       "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
       "materialOptions": [
-        "Fil ressort noir (SM, SH)",
+        "Fil ressort noir (SM)",
+        "Fil ressort noir (SH)",
         "Fil ressort galvanisé",
         "Fil ressort inox"
       ],
@@ -218,6 +220,7 @@
     "compressionForm": {
       "title": " Ressorts de Compression",
       "schemaAlt": "Schéma ressort de compression",
+      "4files": "Maximum 4 fichiers",
       "schema": "Schéma",
       "maindim": "Spécifications principales",
       "diameterWire": "Diamètre du fil (d)",
@@ -233,7 +236,8 @@
       "quantity": "Quantité",
       "material": "Matière",
       "materialOptions": [
-        "Fil ressort noir (SM, SH)",
+        "Fil ressort noir (SM)",
+        "Fil ressort noir (SH)",
         "Fil ressort galvanisé",
         "Fil ressort inox"
       ],
@@ -266,6 +270,7 @@
       "title": " Ressorts de Torsion",
       "schemaAlt": "Schéma ressort torsion",
       "schema": "Schéma",
+      "4files": "Maximum 4 fichiers",
       "maindim": "Spécifications principales",
       "diameterWire": "Diamètre du fil (d)",
       "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
@@ -290,7 +295,8 @@
       "quantity": "Quantité",
       "material": "Matière",
       "materialOptions": [
-        "Fil ressort noir (SM, SH)",
+        "Fil ressort noir (SM)",
+        "Fil ressort noir (SH)",
         "Fil ressort galvanisé",
         "Fil ressort inox"
       ],
@@ -307,9 +313,10 @@
       "reservedClients": "Réservé aux clients"
     },
     "filForm": {
-      "title": " Fil dressé / coupé",
+      "title": " Fil dressé coupé",
       "schemaAlt": "Faisceau de fils métalliques",
       "schema": "Schéma",
+      "4files": "Maximum 4 fichiers",
       "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
       "maindim": "Spécifications principales",
@@ -344,6 +351,7 @@
       "title": " Grille métallique",
       "schemaAlt": "Grille métallique avec zoom",
       "schema": "Schéma",
+      "4files": "Maximum 4 fichiers",
       "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
       "maindim": "Spécifications principales",
@@ -364,9 +372,10 @@
       ],
       "finish": "Finition / traitement",
       "finishChecks": [
-        "Zingage",
         "Peinture",
-        "Aucun"
+        "Chromage",
+        "Galvanisation",
+        "Autre"
       ],
       "docs": "Documents (plan, croquis)",
       "specialReq": "Exigences particulières",
@@ -382,10 +391,11 @@
     "autreForm": {
       "title": "Autre article en fil métallique",
       "description": "Description de l'article",
+      "4files": "Maximum 4 fichiers",
       "acceptedTypes": "Types acceptés : .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Cliquez ou glissez-déposez vos fichiers ici",
       "designation": "Désignation / Référence",
-      "dimensions": "Dimensions principales",
+      "dimensions": "Diamètre du fil en mm",
       "quantity": "Quantité",
       "material": "Matière",
       "materialOptions": [

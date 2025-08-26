@@ -98,7 +98,7 @@ export default function LoginPage() {
               </div>
               <h2
                 className="text-4xl font-extrabold leading-tight text-[#002147]"
-                style={{ fontFamily: "'Lora', serif", marginTop: "-80px" }}
+                style={{ fontFamily: "'Lora', serif", marginTop: "-60px" }}
               >
                 {t("joinClientSpace")}
               </h2>

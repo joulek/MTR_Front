@@ -1,3 +1,4 @@
+// components/forms/AutreArticleForm.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -21,11 +22,19 @@ export default function AutreArticleForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  const matOptions = t.raw("materialOptions") || [];
-  const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
+  // ======= Matière : options + gestion d' "Autre" =======
+  const otherLabel = t.has("other") ? t("other") : "Autre";
+  const [selectedMat, setSelectedMat] = useState("");
+  const matOptionsRaw = t.raw("materialOptions") || [];
+  const matOptions = matOptionsRaw.includes(otherLabel)
+    ? matOptionsRaw
+    : [...matOptionsRaw, otherLabel];
 
-  // ✅ AJOUT MINIMAL : mapping des libellés anglais -> valeurs FR attendues par le backend
-  // (aucun changement d’UI, on convertit seulement au moment de l’envoi)
+  const selectPlaceholder = t.has("selectPlaceholder")
+    ? t("selectPlaceholder")
+    : "Sélectionnez…";
+
+  // ✅ mapping EN -> FR si jamais des labels anglais arrivent au backend
   const EN_MAT = [
     "Galvanized steel wire",
     "Black steel wire",
@@ -34,37 +43,28 @@ export default function AutreArticleForm() {
     "Galvanized steel",
     "Black steel",
     "Spring steel",
-    "Stainless steel"
+    "Stainless steel",
   ];
-  const FR_MAT = [
-    "Acier galvanisé",
-    "Acier Noir",
-    "Acier ressort",
-    "Acier inoxydable"
-  ];
+  const FR_MAT = ["Acier galvanisé", "Acier Noir", "Acier ressort", "Acier inoxydable"];
   function normalizeMatiere(fd) {
     const v = fd.get("matiere");
     if (!v) return;
-    // déjà FR ?
     if (FR_MAT.includes(v)) return;
-    // cherche correspondance exacte d'abord
     let idx = EN_MAT.indexOf(String(v));
     if (idx >= 0) {
-      // regrouper 8 EN vers 4 FR (par paires)
       const frIndex = Math.min(idx, 3);
       fd.set("matiere", FR_MAT[frIndex]);
       return;
     }
-    // tolérer casse/espaces
     const low = String(v).toLowerCase().trim();
-    const enLow = EN_MAT.map(s => s.toLowerCase());
+    const enLow = EN_MAT.map((s) => s.toLowerCase());
     idx = enLow.indexOf(low);
     if (idx >= 0) {
       const frIndex = Math.min(idx, 3);
       fd.set("matiere", FR_MAT[frIndex]);
     }
   }
-  // -------------------------------------------------------------------------------
+  // ------------------------------------------------------
 
   // Récup session
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function AutreArticleForm() {
     setFiles(arr);
     if (fileInputRef.current) {
       const dt = new DataTransfer();
-      arr.forEach(f => dt.items.add(f));
+      arr.forEach((f) => dt.items.add(f));
       fileInputRef.current.files = dt.files;
     }
   }
@@ -103,95 +103,91 @@ export default function AutreArticleForm() {
     if (e.dataTransfer?.files?.length) handleFileList(e.dataTransfer.files);
   }
 
- const onSubmit = async (e) => {
-  e.preventDefault();
-  const form = e.currentTarget;
-  setOk(""); setErr("");
-  finishedRef.current = false;
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    setOk("");
+    setErr("");
+    finishedRef.current = false;
 
-  if (!user?.authenticated) {
-    setErr(t.has("loginToSend") ? t("loginToSend") : "Vous devez être connecté pour envoyer un devis.");
-    return;
-  }
-  if (user.role !== "client") {
-    setErr(t.has("reservedClients") ? t("reservedClients") : "Seuls les clients peuvent envoyer une demande de devis.");
-    return;
-  }
-
-  // ⚠️ petit garde-fou: au moins un fichier si tu le veux “obligatoire”
-  // if (files.length === 0) { setErr("Veuillez joindre au moins un document."); return; }
-
-  setLoading(true);
-  try {
-    const fd = new FormData(form);
-    fd.append("type", "autre");
-
-    // --- lecture propre + trim ---
-    const designation = (fd.get("designation") || "").toString().trim();
-    const dimensions  = (fd.get("dimensions")  || "").toString().trim();
-    const matiere     = (fd.get("matiere")     || "").toString().trim();
-    const exigences   = (fd.get("exigences")   || "").toString().trim();
-    const remarques   = (fd.get("remarques")   || "").toString().trim();
-    const descLibre   = (fd.get("description") || "").toString().trim();
-    const qRaw        = (fd.get("quantite")    || "").toString().trim();
-
-    // --- quantité en nombre >= 1 ---
-    const qte = Math.max(1, Number.isFinite(Number(qRaw)) ? Number(qRaw) : 1);
-    fd.set("quantite", String(qte)); // le back lira Number(quantite)
-
-    // --- titre/description (compat back) ---
-    const titre = designation || (matiere ? `Article (${matiere})` : "Article");
-    let description = descLibre;
-    if (!description) {
-      const parts = [];
-      if (dimensions) parts.push(`Dimensions : ${dimensions}`);
-      if (exigences)  parts.push(`Exigences : ${exigences}`);
-      if (remarques)  parts.push(`Remarques : ${remarques}`);
-      description = parts.join("\n");
+    if (!user?.authenticated) {
+      setErr(t.has("loginToSend") ? t("loginToSend") : "Vous devez être connecté pour envoyer un devis.");
+      return;
     }
-    fd.set("titre", titre);
-    fd.set("description", description);
-
-    // --- S'assure que ces champs existent clairement dans le corps ---
-    fd.set("designation", designation);
-    fd.set("dimensions", dimensions);
-    fd.set("matiere", matiere);
-    fd.set("exigences", exigences);
-    fd.set("remarques", remarques);
-
-    // --- normalisation EN -> FR de "matiere" (aucun impact UI) ---
-    normalizeMatiere(fd);
-
-    // (inutile d'envoyer l'user; le back lit req.user)
-    const res = await fetch("/api/devis/autre", {
-      method: "POST",
-      body: fd,
-      credentials: "include",
-    });
-
-    let payload = null;
-    try { payload = await res.json(); } catch {}
-
-    if (res.ok) {
-      finishedRef.current = true;
-      setErr("");
-      setOk(t.has("sendSuccess") ? t("sendSuccess") : "Demande envoyée. Merci !");
-      form.reset();
-      setFiles([]);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+    if (user.role !== "client") {
+      setErr(t.has("reservedClients") ? t("reservedClients") : "Seuls les clients peuvent envoyer une demande de devis.");
       return;
     }
 
-    const msg = payload?.message || `Erreur lors de l’envoi. (HTTP ${res.status})`;
-    setErr(msg);
-  } catch (e) {
-    console.error("submit autre error:", e);
-    if (!finishedRef.current) setErr("Erreur réseau.");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      const fd = new FormData(form);
+      fd.append("type", "autre");
 
+      // lecture & nettoyage
+      const designation = (fd.get("designation") || "").toString().trim();
+      const dimensions  = (fd.get("dimensions")  || "").toString().trim();
+      const exigences   = (fd.get("exigences")   || "").toString().trim();
+      const remarques   = (fd.get("remarques")   || "").toString().trim();
+      const descLibre   = (fd.get("description") || "").toString().trim();
+      const qRaw        = (fd.get("quantite")    || "").toString().trim();
+
+      // quantité >= 1
+      const qte = Math.max(1, Number.isFinite(Number(qRaw)) ? Number(qRaw) : 1);
+      fd.set("quantite", String(qte));
+
+      // Si "Autre" est choisi, on remplace matiere par le texte libre
+      if (fd.get("matiere") === otherLabel) {
+        const custom = (fd.get("matiere_autre") || "").toString().trim();
+        if (custom) fd.set("matiere", custom);
+      }
+
+      // titre + description (compat backend)
+      const matiere   = (fd.get("matiere") || "").toString().trim();
+      const titre     = designation || (matiere ? `Article (${matiere})` : "Article");
+      let description = descLibre;
+      if (!description) {
+        const parts = [];
+        if (dimensions) parts.push(`Dimensions : ${dimensions}`);
+        if (exigences)  parts.push(`Exigences : ${exigences}`);
+        if (remarques)  parts.push(`Remarques : ${remarques}`);
+        description = parts.join("\n");
+      }
+      fd.set("titre", titre);
+      fd.set("description", description);
+
+      // normalisation EN -> FR si besoin
+      normalizeMatiere(fd);
+
+      const res = await fetch("/api/devis/autre", {
+        method: "POST",
+        body: fd,
+        credentials: "include",
+      });
+
+      let payload = null;
+      try { payload = await res.json(); } catch {}
+
+      if (res.ok) {
+        finishedRef.current = true;
+        setErr("");
+        setOk(t.has("sendSuccess") ? t("sendSuccess") : "Demande envoyée. Merci !");
+        form.reset();
+        setFiles([]);
+        setSelectedMat(""); // reset select
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+
+      const msg = payload?.message || `Erreur lors de l’envoi. (HTTP ${res.status})`;
+      setErr(msg);
+    } catch (e2) {
+      console.error("submit autre error:", e2);
+      if (!finishedRef.current) setErr("Erreur réseau.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const disabled = loading || !user?.authenticated || user?.role !== "client";
 
@@ -208,15 +204,28 @@ export default function AutreArticleForm() {
         <SectionTitle>{t("mainInfo")}</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <Input name="designation" label={t("designation")} required />
-          <Input name="dimensions" label={t("dimensions")} />
-          <Input name="quantite" label={t("quantity")} type="number" min="1" required />
+          <Input name="dimensions"  label={t("dimensions")} />
+          <Input name="quantite"    label={t("quantity")} type="number" min="1" required />
+
+          {/* Select Matière contrôlé */}
           <SelectBase
             name="matiere"
             label={t("material")}
             options={matOptions}
             placeholder={selectPlaceholder}
             required
+            value={selectedMat}
+            onChange={(e) => setSelectedMat(e.target.value)}
           />
+
+          {/* Champ texte visible si "Autre" sélectionné */}
+          {selectedMat === otherLabel && (
+            <Input
+              name="matiere_autre"
+              label={t.has("materialOtherLabel") ? t("materialOtherLabel") : "Autre matière (précisez)"}
+              required
+            />
+          )}
         </div>
 
         {/* Description libre */}
@@ -226,9 +235,8 @@ export default function AutreArticleForm() {
 
         {/* Fichiers */}
         <SectionTitle className="mt-8">{t("docs")} <RequiredMark /></SectionTitle>
-        <p className="text-sm text-gray-500 mb-3">
-          {t("acceptedTypes")}
-        </p>
+        <p className="text-sm text-gray-500 mb-3">{t("acceptedTypes")}</p>
+
         <label
           htmlFor="docs"
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -239,9 +247,10 @@ export default function AutreArticleForm() {
                       border-2 border-dashed ${isDragging ? "border-yellow-500 ring-2 ring-yellow-300" : "border-yellow-500"}`}
         >
           {files.length === 0 ? (
-            <p className="text-base font-medium text-[#002147]">
-              {t("dropHere")}
-            </p>
+            <div className="text-center">
+              <p className="text-base font-medium text-[#002147]">{t("dropHere")}</p>
+              <p className="text-sm text-gray-500 mb-3">{t("4files")}</p>
+            </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">
@@ -255,6 +264,7 @@ export default function AutreArticleForm() {
               </p>
             </div>
           )}
+
           <input
             id="docs"
             ref={fileInputRef}
@@ -294,9 +304,9 @@ export default function AutreArticleForm() {
 
           <div ref={alertRef} aria-live="polite" className="mt-3">
             {loading ? (
-              <Alert type="info" message={t("sending")} />
+              <Alert type="info"    message={t("sending")} />
             ) : err ? (
-              <Alert type="error" message={err} />
+              <Alert type="error"   message={err} />
             ) : ok ? (
               <Alert type="success" message={ok} />
             ) : null}
@@ -320,7 +330,7 @@ function SectionTitle({ children, className = "" }) {
   );
 }
 function Alert({ type = "info", message }) {
-  const base = "w-full rounded-xl px-4 py-3 text-sm font-medium border flex items-start gap-2";
+  const base   = "w-full rounded-xl px-4 py-3 text-sm font-medium border flex items-start gap-2";
   const styles =
     type === "error"
       ? "bg-red-50 text-red-700 border-red-200"
@@ -353,7 +363,9 @@ function Input({ label, name, required, type = "text", min }) {
     </div>
   );
 }
-function SelectBase({ label, name, options = [], required, placeholder }) {
+function SelectBase({
+  label, name, options = [], required, placeholder, value, onChange,
+}) {
   return (
     <div className="space-y-1 w-full">
       {label && (
@@ -364,6 +376,8 @@ function SelectBase({ label, name, options = [], required, placeholder }) {
       <select
         name={name}
         required={required}
+        value={value}
+        onChange={onChange}
         className="w-full rounded-xl border border-gray-200 px-4 py-2.5 bg-white
                    text-[#002147] text-[15px] font-medium
                    focus:outline-none focus:ring-2 focus:ring-[#002147]/30 focus:border-[#002147] pr-10"
@@ -386,7 +400,6 @@ function SelectBase({ label, name, options = [], required, placeholder }) {
     </div>
   );
 }
-
 function TextArea({ label, name }) {
   return (
     <div className="space-y-1">

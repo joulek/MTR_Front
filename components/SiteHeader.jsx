@@ -472,14 +472,13 @@ export default function SiteHeader({ mode = "public", onLogout }) {
               À propos
             </button>
             <span className="opacity-40">|</span>
-            <button
-              type="button"
-              onClick={() => goToSection("contact")}
+            <Link
+              href={`/${locale}/help-desk`}
               className="opacity-90 transition hover:text-[#F5B301]"
-              role="link"
             >
               Help Desk
-            </button>
+            </Link>
+
             <span className="opacity-40">|</span>
             <button
               type="button"
@@ -510,33 +509,28 @@ export default function SiteHeader({ mode = "public", onLogout }) {
             >
               <Linkedin className="h-4 w-4" />
             </a>
-
             <div className="flex items-center gap-2 ml-2">
               <button
                 onClick={() => switchLang("fr")}
                 className={`${locale === "fr" ? "ring-2 ring-[#F5B301] rounded-full" : ""
-                  } p-0 bg-transparent border-0`}
+                  } px-2 py-1 bg-transparent border-0 text-sm font-semibold`}
                 title="Français"
                 aria-pressed={locale === "fr"}
               >
-                <CircleFlag
-                  countryCode="fr"
-                  style={{ width: 20, height: 20 }}
-                />
+                FR
               </button>
+
               <button
                 onClick={() => switchLang("en")}
                 className={`${locale === "en" ? "ring-2 ring-[#F5B301] rounded-full" : ""
-                  } p-0 bg-transparent border-0`}
+                  } px-2 py-1 bg-transparent border-0 text-sm font-semibold`}
                 title="English"
                 aria-pressed={locale === "en"}
               >
-                <CircleFlag
-                  countryCode="us"
-                  style={{ width: 20, height: 20 }}
-                />
+                US
               </button>
             </div>
+
           </div>
         </div>
       </div>

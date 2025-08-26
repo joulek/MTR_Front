@@ -164,7 +164,7 @@
         "compression": " Compression Spring",
         "traction": " Extension Spring",
         "torsion": "Torsion Spring",
-        "fil": " Straightened / Cut Wire",
+        "fil": " Straightened Cut Wire",
         "grille": " Metal Grid",
         "autre": " Other Metal Wire Product"
       }
@@ -174,6 +174,7 @@
       "diameterWire": "Wire diameter (d)",
       "diameterExt": "Outer diameter (De)",
       "schema": "Schema",
+      "4files": "Maximum 4 files",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
       "maindim": "Main specifications",
@@ -183,7 +184,8 @@
       "material": "Material",
       "selectPlaceholder": "-- Select --",
       "materialOptions": [
-        "Black spring wire (SM, SH)",
+        "Black spring wire (SM)",
+        "Black spring wire (SH)",
         "Galvanized spring wire",
         "Stainless steel spring wire"
       ],
@@ -226,6 +228,7 @@
       "title": " Compression Springs",
       "schemaAlt": "Compression spring diagram",
       "schema": "Schema",
+      "4files": "Maximum 4 files",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
       "maindim": "Main specifications",
@@ -241,7 +244,8 @@
       "material": "Material",
       "loginToSend": "Login to send",
       "materialOptions": [
-        "Black spring wire (SM, SH)",
+        "Black spring wire (SM)",
+        "Black spring wire (SH)",
         "Galvanized spring wire",
         "Stainless steel spring wire"
       ],
@@ -271,6 +275,7 @@
     "torsionForm": {
       "title": " Torsion Springs",
       "schemaAlt": "Torsion spring diagram",
+      "4files": "Maximum 4 files",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
       "diameterWire": "Wire diameter (d)",
@@ -297,7 +302,8 @@
       "quantity": "Quantity",
       "material": "Material",
       "materialOptions": [
-        "Black spring wire (SM, SH)",
+        "Black spring wire (SM)",
+        "Black spring wire (SH)",
         "Galvanized spring wire",
         "Stainless steel spring wire"
       ],
@@ -312,8 +318,9 @@
       "sendRequest": "Send request"
     },
     "filForm": {
-      "title": " Straightened / Cut Wire",
+      "title": " Straightened  Cut Wire",
       "schemaAlt": "Metal wire bundle",
+      "4files": "Maximum 4 files",
       "schema": "Schema",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
@@ -348,6 +355,7 @@
     "grilleForm": {
       "title": " Metal Grid",
       "schemaAlt": "Metal grid with zoom",
+      "4files": "Maximum 4 files",
       "schema": "Schema",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
@@ -370,10 +378,11 @@
         "Stainless steel"
       ],
       "finish": "Finish / treatment",
-      "finishChecks": [
-        "Zinc plating",
-        "Paint",
-        "None"
+      "finishChecks_en": [
+        "Painting",
+        "Chrome plating",
+        "Galvanization",
+        "Other"
       ],
       "docs": "Documents (drawing, sketch)",
       "specialReq": "Special requirements",
@@ -387,9 +396,10 @@
     "autreForm": {
       "title": " Other Metal Wire Product",
       "designation": "Designation / Reference",
+      "4files": "Maximum 4 files",
       "acceptedTypes": "Accepted types: .pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png, .gif, .txt",
       "dropHere": "Click or drag and drop your files here",
-      "dimensions": "Main dimensions",
+      "dimensions": "Wire diameter in mm",
       "mainInfo": "Main information",
       "loginToSend": "Login to send",
       "quantity": "Quantity",
@@ -719,7 +729,7 @@
     }
   },
   "devisFil": {
-    "title": "Quote Request – Straight/Cut Wire",
+    "title": "Quote Request – Straight Cut Wire",
     "searchPlaceholder": "Search by No., client or date…",
     "searchAria": "Search a quote request",
     "clearSearch": "Clear search",
