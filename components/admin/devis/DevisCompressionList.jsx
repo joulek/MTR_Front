@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
 import { FiSearch, FiXCircle } from "react-icons/fi";
-import DevisModal from "@/components/admin/devis/DevisModal"; // ⬅️ AJOUT
+import DevisModal from "@/components/admin/devis/DevisModal";
+import MultiDevisModal from "@/components/admin/devis/MultiDevisModal"; // ✅ modal multi-demandes
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 const WRAP = "mx-auto w-full max-w-4xl px-3 sm:px-4";
@@ -28,8 +29,8 @@ function shortDate(d) {
 
 export default function DevisCompressionList() {
   const t = useTranslations("devisCompression");
-
   const router = useRouter();
+
   const [items, setItems] = useState([]);
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,14 +38,19 @@ export default function DevisCompressionList() {
   // Recherche
   const [q, setQ] = useState("");
 
+  // Sélection multiple (⚠️ pas d’annotations TS dans un .js)
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [multiOpen, setMultiOpen] = useState(false);
+  const [multiDemands, setMultiDemands] = useState([]);
+
   // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  // 🔽 Modale + état “devis déjà existant”
-  const [modalOpen, setModalOpen] = useState(false);            // ⬅️ AJOUT
-  const [selectedDemande, setSelectedDemande] = useState(null); // ⬅️ AJOUT
-  const [devisMap, setDevisMap] = useState({});                 // ⬅️ AJOUT  {demandeId: {numero, pdf}}
+  // Modale simple + map “devis existant”
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedDemande, setSelectedDemande] = useState(null);
+  const [devisMap, setDevisMap] = useState({}); // {demandeId: {numero, pdf}}
 
   // Charger la liste
   const load = useCallback(async () => {
@@ -79,7 +85,7 @@ export default function DevisCompressionList() {
 
   useEffect(() => { load(); }, [load]);
 
-  // 🔽 Après chargement, vérifier l’existence d’un devis pour chaque demande
+  // Vérifier s’il existe déjà un devis pour chaque demande
   useEffect(() => {
     if (!items.length) {
       setDevisMap({});
@@ -96,10 +102,7 @@ export default function DevisCompressionList() {
               { credentials: "include" }
             );
             const j = await r.json().catch(() => null);
-            // backend: { success:true, exists:true, devis:{numero}, pdf } ou { success:false, exists:false }
-            if (j?.success && j?.exists) {
-              return [d._id, { numero: j.devis?.numero, pdf: j.pdf }];
-            }
+            if (j?.success && j?.exists) return [d._id, { numero: j.devis?.numero, pdf: j.pdf }];
             return null;
           } catch {
             return null;
@@ -115,7 +118,7 @@ export default function DevisCompressionList() {
     return () => { cancelled = true; };
   }, [items]);
 
-  // Filtre local (N°, Client, Date)
+  // Filtrage local (N°, Client, Date)
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     if (!needle) return items;
@@ -138,7 +141,7 @@ export default function DevisCompressionList() {
   // Reset page à chaque saisie
   useEffect(() => { setPage(1); }, [q]);
 
-  // Découpage paginé
+  // Pagination
   const { pageItems, total } = useMemo(() => {
     const total = filtered.length;
     const start = (page - 1) * pageSize;
@@ -146,7 +149,7 @@ export default function DevisCompressionList() {
     return { pageItems: filtered.slice(start, end), total };
   }, [filtered, page, pageSize]);
 
-  // Ouverture PDF
+  // Ouverture PDF / doc joint
   async function viewPdfById(id) {
     try {
       const res = await fetch(`${BACKEND}/api/admin/devis/compression/${id}/pdf`, {
@@ -162,8 +165,6 @@ export default function DevisCompressionList() {
       alert(t("errors.pdfOpenError"));
     }
   }
-
-  // Ouverture doc joint
   async function viewDocByIndex(id, index) {
     try {
       const res = await fetch(`${BACKEND}/api/admin/devis/compression/${id}/document/${index}`, {
@@ -180,14 +181,28 @@ export default function DevisCompressionList() {
     }
   }
 
-  // 🔽 Ouvrir la modale pour créer un devis
+  // Modale simple
   function openDevis(d) {
     setSelectedDemande({ ...d, demandeNumero: d?.numero || "" });
     setModalOpen(true);
   }
 
-  // ✅ mêmes largeurs (ajout “Actions” comme pour Autre)
-  const colWidths = ["w-[150px]", "w-[200px]", "w-[170px]", "w-[90px]", "w-[130px]", "w-auto"];
+  // Ouvrir modal multi-demandes
+  function openMultiFromSelection() {
+    const chosen = items.filter((it) => selectedIds.includes(it._id));
+    if (!chosen.length) return;
+    // Sécurité: même client
+    const c0 = chosen[0]?.user?._id?.toString?.();
+    if (!chosen.every((x) => (x?.user?._id?.toString?.()) === c0)) {
+      alert("Sélectionne des demandes appartenant au même client.");
+      return;
+    }
+    setMultiDemands(chosen);
+    setMultiOpen(true);
+  }
+
+  // ✅ mêmes largeurs (on ajoute la colonne checkbox en première position)
+  const colWidths = ["w-[54px]", "w-[150px]", "w-[200px]", "w-[170px]", "w-[90px]", "w-[130px]", "w-auto"];
 
   return (
     <div className="py-6 space-y-4">
@@ -241,6 +256,17 @@ export default function DevisCompressionList() {
           <p className="text-gray-500">{t("noData")}</p>
         ) : (
           <>
+            {/* Bouton global (desktop/tablette) */}
+            <div className="hidden sm:flex justify-end pb-2">
+              <button
+                disabled={selectedIds.length === 0}
+                onClick={openMultiFromSelection}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#F7C600] text-[#0B1E3A] px-4 py-2 font-semibold shadow disabled:opacity-50"
+              >
+                Créer devis (sélection)
+              </button>
+            </div>
+
             {/* Desktop / tablette */}
             <div className="hidden sm:block">
               <table className="w-full table-fixed text-sm border-separate border-spacing-0">
@@ -250,7 +276,25 @@ export default function DevisCompressionList() {
 
                 <thead>
                   <tr>
-                    {[t("columns.number"), t("columns.client"), t("columns.date"), t("columns.pdf"), "Actions", t("columns.attachments")].map((h) => (
+                    {/* checkbox header */}
+                    <th className="p-2 text-left align-bottom">
+                      <input
+                        type="checkbox"
+                        aria-label="Tout sélectionner sur la page"
+                        checked={pageItems.length > 0 && pageItems.every(it => selectedIds.includes(it._id))}
+                        onChange={(e) => {
+                          const pageIds = pageItems.map(it => it._id);
+                          setSelectedIds(prev =>
+                            e.target.checked
+                              ? Array.from(new Set([...prev, ...pageIds]))
+                              : prev.filter(id => !pageIds.includes(id))
+                          );
+                        }}
+                      />
+                      <div className="mt-2 h-px w-full bg-gray-200" />
+                    </th>
+
+                    {[t("columns.number"), t("columns.client"), t("columns.date"), t("columns.pdf"), t("columns.attachments")].map((h) => (
                       <th key={h} className="p-2 text-left align-bottom">
                         <div className="text-[13px] font-semibold uppercase tracking-wide text-slate-600">
                           {h}
@@ -268,10 +312,23 @@ export default function DevisCompressionList() {
                       .map((doc, idx) => ({ ...doc, index: doc.index ?? idx, filename: cleanFilename(doc.filename) }))
                       .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
 
-                    const devisInfo = devisMap[d._id]; // ⬅️ { numero, pdf } si existe
+                    const devisInfo = devisMap[d._id];
 
                     return (
                       <tr key={d._id} className="hover:bg-[#0B1E3A]/[0.03] transition-colors">
+                        {/* checkbox cell */}
+                        <td className="p-2 align-top border-b border-gray-200">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(d._id)}
+                            onChange={(e) =>
+                              setSelectedIds(prev =>
+                                e.target.checked ? [...prev, d._id] : prev.filter(id => id !== d._id)
+                              )
+                            }
+                          />
+                        </td>
+
                         {/* N° */}
                         <td className="p-2 align-top border-b border-gray-200">
                           <div className="flex items-center gap-2">
@@ -306,27 +363,6 @@ export default function DevisCompressionList() {
                           )}
                         </td>
 
-                        {/* Actions */}
-                        <td className="p-2 align-top border-b border-gray-200">
-                          {devisInfo?.pdf ? (
-                            <a
-                              href={devisInfo.pdf}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title={`Devis ${devisInfo.numero || ""}`}
-                              className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-2 py-0.5 text-[11px] hover:bg-[#0B1E3A]/5"
-                            >
-                              Ouvrir devis
-                            </a>
-                          ) : (
-                            <button
-                              onClick={() => openDevis(d)}
-                              className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-2 py-0.5 text-[11px] hover:bg-yellow-500 hover:text-white"
-                            >
-                              Créer devis
-                            </button>
-                          )}
-                        </td>
 
                         {/* Fichiers joints */}
                         <td className="p-2 align-top border-b border-gray-200">
@@ -364,6 +400,17 @@ export default function DevisCompressionList() {
 
             {/* Mobile */}
             <div className="sm:hidden divide-y divide-gray-200">
+              {/* Bouton global (mobile) */}
+              <div className="flex justify-end pb-2">
+                <button
+                  disabled={selectedIds.length === 0}
+                  onClick={openMultiFromSelection}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#F7C600] text-[#0B1E3A] px-4 py-2 font-semibold shadow disabled:opacity-50"
+                >
+                  Créer devis (sélection)
+                </button>
+              </div>
+
               {pageItems.map((d) => {
                 const hasPdf = !!d?.hasDemandePdf;
                 const docs = (d?.documents || [])
@@ -373,7 +420,18 @@ export default function DevisCompressionList() {
 
                 return (
                   <div key={d._id} className="py-3">
+                    {/* ligne titre + checkbox */}
                     <div className="flex items-center gap-2 text-[#0B1E3A]">
+                      <input
+                        type="checkbox"
+                        className="mr-1"
+                        checked={selectedIds.includes(d._id)}
+                        onChange={(e) =>
+                          setSelectedIds(prev =>
+                            e.target.checked ? [...prev, d._id] : prev.filter(id => id !== d._id)
+                          )
+                        }
+                      />
                       <span className="h-2 w-2 rounded-full bg-[#F7C600] shrink-0" />
                       <span className="font-mono">{d.numero}</span>
                     </div>
@@ -459,14 +517,25 @@ export default function DevisCompressionList() {
         )}
       </div>
 
-      {/* Modale création de devis */}
+      {/* Modales */}
       <DevisModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         demande={selectedDemande}
         onCreated={() => {
           setModalOpen(false);
-          load(); // recharge la liste et met à jour devisMap
+          load();
+        }}
+      />
+
+      <MultiDevisModal
+        open={multiOpen}
+        onClose={() => setMultiOpen(false)}
+        demands={multiDemands}
+        onCreated={() => {
+          setMultiOpen(false);
+          setSelectedIds([]);
+          load();
         }}
       />
     </div>

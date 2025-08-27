@@ -89,13 +89,6 @@ export default function AdminArticlesPage() {
   }, []);
 
   // options devis (inclut la valeur courante si manquante)
-  const devisOptions = useMemo(() => {
-    const arr = [...devisList];
-    if (form.numeroDevis && !arr.some((d) => d.numero === form.numeroDevis)) {
-      arr.unshift({ _id: "__current__", numero: form.numeroDevis });
-    }
-    return arr;
-  }, [devisList, form.numeroDevis]);
 
   // ===== UI actions =====
   const openAdd = () => {
@@ -109,7 +102,6 @@ export default function AdminArticlesPage() {
       reference: it.reference ?? "",
       designation: it.designation ?? "",
       prixHT: (it.prixHT ?? "").toString(),
-      numeroDevis: it.numeroDevis ?? "",
     });
     setIsOpen(true);
   };
@@ -225,7 +217,7 @@ export default function AdminArticlesPage() {
   }, [filtered, page, pageSize]);
 
   // largeurs de colonnes sans whitespace dans <colgroup>
-  const colWidths = ["w-[18%]", "w-[32%]", "w-[12%]", "w-[12%]", "w-[16%]", "w-[10%]"];
+  const colWidths = ["w-[18%]", "w-[32%]", "w-[12%]", "w-[12%]", "w-[16%]"];
 
   return (
     <div className="py-6 space-y-6 sm:space-y-8">
@@ -360,9 +352,6 @@ export default function AdminArticlesPage() {
                           <td className="p-3 align-middle text-right text-[#0B1E3A]">
                             {Number(it.prixTTC ?? it.prixHT * 1.2).toFixed(4)}
                           </td>
-                          <td className="p-3 align-middle text-[#0B1E3A]">
-                            {it.numeroDevis || t("misc.none")}
-                          </td>
                           <td className="p-3 align-middle">
                             <div className="flex items-center justify-end gap-2">
                               <button
@@ -443,14 +432,6 @@ export default function AdminArticlesPage() {
                           </div>
                         </div>
 
-                        <p className="mt-3 text-xs font-semibold text-gray-500">
-                          {t("table.quoteNumber")}
-                        </p>
-                        <p className="text-[#0B1E3A]">
-                          {it.numeroDevis || (
-                            <span className="text-gray-400">{t("misc.none")}</span>
-                          )}
-                        </p>
                       </div>
 
                       <div className="flex flex-col gap-2 shrink-0">
@@ -555,37 +536,6 @@ export default function AdminArticlesPage() {
                   />
                 </label>
 
-                <label className="block">
-                  <span className="block text-sm font-medium text-gray-700 mb-1">
-                    {t("labels.quoteNumber")}
-                  </span>
-                  <div className="relative">
-                    <select
-                      name="numeroDevis"
-                      value={form.numeroDevis}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, numeroDevis: e.target.value }))
-                      }
-                      className="appearance-none w-full rounded-xl border border-gray-200 bg-white px-3 pr-10 py-2 text-[#0B1E3A] focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
-                    >
-                      <option value="">{t("placeholders.select")}</option>
-                      {devisOptions.map((d) => (
-                        <option key={(d._id ?? "") + d.numero} value={d.numero}>
-                          {d.numero}
-                        </option>
-                      ))}
-                    </select>
-                    <FiChevronDown
-                      size={18}
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                  </div>
-                  {loadingDevis && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t("loadingQuotes")}
-                    </p>
-                  )}
-                </label>
               </div>
 
               <div className="pt-2 border-t border-gray-100 flex items-center justify-end gap-2">
