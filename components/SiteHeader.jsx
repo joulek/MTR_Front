@@ -527,7 +527,7 @@ export default function SiteHeader({ mode = "public", onLogout }) {
                 title="English"
                 aria-pressed={locale === "en"}
               >
-                US
+                EN
               </button>
             </div>
 

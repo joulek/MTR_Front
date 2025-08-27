@@ -1,4 +1,4 @@
-// components/forms/AutreArticleForm.jsx
+// components/forms/AutreArticleForm.jsx 
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -21,6 +21,30 @@ export default function AutreArticleForm() {
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+
+  /* ===== Limite fichiers (ajout) ===== */
+  const MAX_FILES = 4;
+
+  function uniqueBySignature(arr = []) {
+    const seen = new Set();
+    const out = [];
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified || 0}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(f);
+      }
+    }
+    return out;
+  }
+
+  function syncInputFiles(inputRef, filesArr = []) {
+    if (!inputRef?.current) return;
+    const dt = new DataTransfer();
+    filesArr.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }
+  /* ================================== */
 
   // ======= Matière : options + gestion d' "Autre" =======
   const otherLabel = t.has("other") ? t("other") : "Autre";
@@ -88,19 +112,44 @@ export default function AutreArticleForm() {
     return () => clearTimeout(id);
   }, [ok]);
 
-  function handleFileList(list) {
-    const arr = Array.from(list || []);
-    setFiles(arr);
-    if (fileInputRef.current) {
-      const dt = new DataTransfer();
-      arr.forEach((f) => dt.items.add(f));
-      fileInputRef.current.files = dt.files;
+  /* ------- Vérification limite (ajout) ------- */
+  function handleFileList(list, { append = true } = {}) {
+    const incoming = Array.from(list || []);
+    if (incoming.length === 0) return;
+
+    // fusionne avec l'existant (append) ou remplace
+    const base = append ? (files || []) : [];
+    const merged = uniqueBySignature([...base, ...incoming]);
+
+    if (merged.length > MAX_FILES) {
+      const kept = merged.slice(0, MAX_FILES);
+      const ignoredCount = merged.length - kept.length;
+
+      setFiles(kept);
+      syncInputFiles(fileInputRef, kept);
+
+      // message unique traduit
+        setErr(t("limit")); // "Limite dépassée, maximum 4 fichiers." / "Limit exceeded, maximum 4 files."
+
+      console.warn("[Upload] Dépassement de la limite de fichiers:", {
+        incoming: incoming.length,
+        existing: files.length,
+        kept: kept.length,
+        ignored: ignoredCount,
+        max: MAX_FILES,
+      });
+      return;
     }
+
+    setFiles(merged);
+    syncInputFiles(fileInputRef, merged);
   }
+  /* ------------------------------------------ */
+
   function onDrop(e) {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer?.files?.length) handleFileList(e.dataTransfer.files);
+    if (e.dataTransfer?.files?.length) handleFileList(e.dataTransfer.files, { append: true });
   }
 
   const onSubmit = async (e) => {
@@ -273,7 +322,7 @@ export default function AutreArticleForm() {
             multiple
             accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.txt"
             className="hidden"
-            onChange={(e) => handleFileList(e.target.files)}
+            onChange={(e) => handleFileList(e.target.files, { append: true })}
           />
         </label>
 

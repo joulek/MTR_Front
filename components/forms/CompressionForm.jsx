@@ -1,4 +1,3 @@
-// components/forms/CompressionForm.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
@@ -24,6 +23,30 @@ export default function CompressionForm() {
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
+
+  /* ===================== AJOUTS POUR LIMITER À 4 FICHIERS ===================== */
+  const MAX_FILES = 4;
+
+  function uniqueBySignature(arr = []) {
+    const seen = new Set();
+    const out = [];
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified || 0}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(f);
+      }
+    }
+    return out;
+  }
+
+  function syncInputFiles(inputRef, filesArr = []) {
+    if (!inputRef?.current) return;
+    const dt = new DataTransfer();
+    filesArr.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }
+  /* ========================================================================== */
 
   /* ---------- i18n OPTIONS (labels) + valeurs envoyées au backend ---------- */
   // ✅ Valeurs stables attendues par le backend (SM et SH séparés)
@@ -81,15 +104,39 @@ export default function CompressionForm() {
     return () => clearTimeout(id);
   }, [ok]);
 
-  function handleFileList(list) {
-    const arr = Array.from(list || []);
-    setFiles(arr);
-    if (fileInputRef.current) {
-      const dt = new DataTransfer();
-      arr.forEach((f) => dt.items.add(f));
-      fileInputRef.current.files = dt.files;
+  function handleFileList(list, { append = true } = {}) {
+    const incoming = Array.from(list || []);
+    if (incoming.length === 0) return;
+
+    // fusion avec l'existant (ou remplacement si append=false)
+    const base = append ? (files || []) : [];
+    const merged = uniqueBySignature([...base, ...incoming]);
+
+    if (merged.length > MAX_FILES) {
+      const kept = merged.slice(0, MAX_FILES);
+      const ignoredCount = merged.length - kept.length;
+
+      setFiles(kept);
+      syncInputFiles(fileInputRef, kept);
+
+      // 🔔 message unique via i18n
+      setErr(t("limit"));
+
+      console.warn("[Upload] Dépassement de la limite de fichiers:", {
+        incoming: incoming.length,
+        existing: files.length,
+        kept: kept.length,
+        ignored: ignoredCount,
+        max: MAX_FILES,
+      });
+      return;
     }
+
+    setFiles(merged);
+    syncInputFiles(fileInputRef, merged);
   }
+
+
   function onDrop(e) {
     e.preventDefault();
     setIsDragging(false);
@@ -146,7 +193,7 @@ export default function CompressionForm() {
       });
 
       let payload = null;
-      try { payload = await res.json(); } catch {}
+      try { payload = await res.json(); } catch { }
 
       if (res.ok) {
         finishedRef.current = true;
