@@ -141,6 +141,7 @@
       "articles": "Articles",
       "categories": "Categories",
       "products": "Products",
+      "quotesList":"Quotes List",
       "users": "Users",
       "logout": "Log out",
       "welcomeDashboard": "Welcome to the Admin Dashboard",

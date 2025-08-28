@@ -29,30 +29,29 @@ export default function AdminLayout({ children }) {
     { code: "fr", label: "FR" },
     { code: "en", label: "EN" },
   ];
-const handleLogout = useCallback(() => {
-  try { localStorage.removeItem("token"); sessionStorage.clear(); } catch {}
 
-  const url = "/api/logout";
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url, new Blob([], { type: "application/json" }));
-  } else {
-    fetch(url, { method: "POST", credentials: "include", keepalive: true }).catch(() => {});
-  }
+  const handleLogout = useCallback(() => {
+    try {
+      localStorage.removeItem("token");
+      sessionStorage.clear();
+    } catch {}
 
-  router.replace(`/${locale}/login`);
-  // Si tu veux forcer un nettoyage total de l'état client :
-  // setTimeout(() => window.location.reload(), 50);
-}, [router, locale]);
+    const url = "/api/logout";
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(url, new Blob([], { type: "application/json" }));
+    } else {
+      fetch(url, { method: "POST", credentials: "include", keepalive: true }).catch(() => {});
+    }
 
+    router.replace(`/${locale}/login`);
+    // Optionnel : forcer un nettoyage total
+    // setTimeout(() => window.location.reload(), 50);
+  }, [router, locale]);
 
-  // remplace ta fonction existante
   const switchLocale = useCallback(
     (newLocale) => {
       if (!newLocale || newLocale === locale) return;
-
-      // ➜ redirige vers le dashboard de la nouvelle langue
       router.replace(`/${newLocale}/admin`);
-      // (optionnel) pour fermer le drawer mobile
       setOpen(false);
     },
     [router, locale]
@@ -167,9 +166,17 @@ const handleLogout = useCallback(() => {
               <NavItem href={`${rootAdmin}/articles`} icon={FaNewspaper}>
                 {t.has("articles") ? t("articles") : "Articles"}
               </NavItem>
+
+              {/* ✅ NOUVELLE ENTRÉE : /admin/devis/list */}
+              <NavItem href={`${rootAdmin}/devis/list`} icon={FaFileAlt}>
+                {t.has("quotesList") ? t("quotesList") : "Devis — Liste"}
+              </NavItem>
+
+              {/* (optionnel) entrée existante pour “devis” (traction) */}
               <NavItem href={`${rootAdmin}/devis`} icon={FaFileAlt}>
                 {t.has("tractionOrders") ? t("tractionOrders") : `${t("orders")} – Traction`}
               </NavItem>
+
               <NavItem href={`${rootAdmin}/users`} icon={FaUsers}>
                 {t("users")}
               </NavItem>
@@ -228,9 +235,17 @@ const handleLogout = useCallback(() => {
                   <NavItem href={`${rootAdmin}/articles`} icon={FaNewspaper}>
                     {t.has("articles") ? t("articles") : "Articles"}
                   </NavItem>
+
+                  {/* ✅ NOUVELLE ENTRÉE : /admin/devis/list */}
+                  <NavItem href={`${rootAdmin}/devis/list`} icon={FaFileAlt}>
+                    {t.has("quotesList") ? t("quotesList") : "Devis — Liste"}
+                  </NavItem>
+
+                  {/* (optionnel) entrée existante “devis” (traction) */}
                   <NavItem href={`${rootAdmin}/devis`} icon={FaFileAlt}>
                     {t.has("tractionOrders") ? t("tractionOrders") : `${t("orders")} – Traction`}
                   </NavItem>
+
                   <NavItem href={`${rootAdmin}/users`} icon={FaUsers}>
                     {t("users")}
                   </NavItem>
@@ -256,14 +271,14 @@ const handleLogout = useCallback(() => {
           </>
         )}
 
-        {/* Main content — prend la place, défile, décollé du sidebar fixe */}
+        {/* Main content */}
         <main
           className="
             flex-1 w-full
-            lg:ml-64          /* laisse 256px pour le sidebar fixe */
+            lg:ml-64
             p-6 lg:p-8
             min-h-screen
-            overflow-y-auto    /* seul le contenu défile */
+            overflow-y-auto
           "
         >
           {children}
