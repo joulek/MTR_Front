@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
 import { FiSearch, FiXCircle } from "react-icons/fi";
-import DevisModal from "@/components/admin/devis/DevisModal";
+
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
@@ -422,16 +422,6 @@ export default function DevisGrilleList() {
         )}
       </div>
 
-      {/* Modale création de devis */}
-      <DevisModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        demande={selectedDemande}
-        onCreated={() => {
-          setModalOpen(false);
-          load(); // refresh + recalc devisMap
-        }}
-      />
     </div>
   );
 }

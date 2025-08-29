@@ -14,17 +14,29 @@ type Line = {
   tvaPct: number;
 };
 
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  demands: any[];
+  onCreated?: () => void;
+
+  /** Restreint le picker "Ajouter une demande" à ces types (ex: ["fil"], ["compression"]) */
+  demandKinds?: string[];
+
+  /** Restreint la liste d’articles à ces types (ex: ["fil","fil_dresse_coupe"]) */
+  articleKinds?: string[];
+};
+
+const DEFAULT_KINDS = ["compression", "torsion", "traction", "fil", "forme"];
+
 export default function MultiDevisModal({
   open,
   onClose,
   demands,
   onCreated,
-}: {
-  open: boolean;
-  onClose: () => void;
-  demands: any[];
-  onCreated?: () => void;
-}) {
+  demandKinds,
+  articleKinds,
+}: Props) {
   const [articles, setArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
 
@@ -39,7 +51,7 @@ export default function MultiDevisModal({
 
   const client = demands?.[0]?.user;
 
-  // Helpers
+  // ---------- helpers ----------
   const getPU = (articleId: string) => {
     const a = articles.find((x) => x._id === articleId);
     return Number(a?.prixHT ?? a?.priceHT ?? 0) || 0;
@@ -53,9 +65,29 @@ export default function MultiDevisModal({
     }
   };
 
-  // Initialiser les lignes depuis la sélection
+  // match article par type (robuste aux schémas variés)
+  const matchArticleKind = (a: any, kinds: string[]) => {
+    if (!kinds?.length) return true;
+    const ref = String(a?.reference ?? "").toLowerCase();
+    const label =
+      String(a?.type ?? a?.category ?? a?.famille ?? a?.kind ?? "").toLowerCase();
+    const tags = Array.isArray(a?.tags) ? a.tags.map((t: any) => String(t).toLowerCase()) : [];
+    return kinds.some((k) => {
+      const kk = String(k).toLowerCase();
+      return label.includes(kk) || tags.includes(kk) || ref.includes(kk);
+    });
+  };
+
+  // articles filtrés pour ce contexte
+  const visibleArticles = useMemo(() => {
+    if (!articleKinds?.length) return articles;
+    return articles.filter((a) => matchArticleKind(a, articleKinds));
+  }, [articles, articleKinds]);
+
+  // ---------- init ----------
   useEffect(() => {
     if (!open) return;
+    // Lignes depuis la sélection
     setLines(
       (demands || []).map((d) => ({
         demandeId: d._id,
@@ -67,11 +99,11 @@ export default function MultiDevisModal({
       }))
     );
 
-    // Charger les articles
+    // Articles (on charge large puis on filtre côté client)
     (async () => {
       setLoadingArticles(true);
       try {
-        const r = await fetch(`${BACKEND}/api/articles?limit=1000`, {
+        const r = await fetch(`${BACKEND}/api/articles?limit=2000`, {
           cache: "no-store",
           credentials: "include",
         });
@@ -85,32 +117,47 @@ export default function MultiDevisModal({
     })();
   }, [open, demands]);
 
-  // Charger le pool (factorisé)
+  // ---------- pool multi-types (selon demandKinds) ----------
   const loadPool = useCallback(async () => {
     if (!client?._id) return;
     setPoolLoading(true);
     try {
-      const r = await fetch(`${BACKEND}/api/admin/devis/compression`, {
-        cache: "no-store",
-        credentials: "include",
-      });
-      const j = await r.json().catch(() => null);
-      const all = j?.items ?? [];
-      const sameClient = all.filter((x: any) => x?.user?._id === client._id);
-      setPool(sameClient);
+      const kindsToLoad =
+        demandKinds && demandKinds.length ? demandKinds : DEFAULT_KINDS;
+
+      const results = await Promise.all(
+        kindsToLoad.map(async (k) => {
+          try {
+            const res = await fetch(`${BACKEND}/api/admin/devis/${encodeURIComponent(k)}`, {
+              cache: "no-store",
+              credentials: "include",
+            });
+            const json = await res.json().catch(() => null);
+            const arr = json?.items ?? [];
+            return arr.map((x: any) => ({ ...x, __type: k }));
+          } catch {
+            return [];
+          }
+        })
+      );
+
+      // même client + dédup
+      const all = results.flat().filter((x: any) => x?.user?._id === client._id);
+      const uniq = new Map<string, any>();
+      for (const d of all) if (!uniq.has(d._id)) uniq.set(d._id, d);
+      setPool(Array.from(uniq.values()));
     } catch {
       setPool([]);
     } finally {
       setPoolLoading(false);
     }
-  }, [client?._id]);
+  }, [client?._id, demandKinds]);
 
-  // Préchargement à l’ouverture
   useEffect(() => {
     if (open) loadPool();
   }, [open, loadPool]);
 
-  // Filtrer le pool : retirer ceux déjà dans les lignes + recherche
+  // ---------- recherche dans le picker ----------
   const availableToAdd = useMemo(() => {
     const taken = new Set(lines.map((l) => l.demandeId));
     const base = pool.filter((d) => !taken.has(d._id));
@@ -119,14 +166,14 @@ export default function MultiDevisModal({
     return base.filter((d) => {
       const numero = String(d?.numero || "").toLowerCase();
       const date = fmtDate(d?.createdAt).toLowerCase();
-      return numero.includes(needle) || date.includes(needle);
+      const type = String(d?.__type || "").toLowerCase();
+      return numero.includes(needle) || date.includes(needle) || type.includes(needle);
     });
   }, [pool, lines, pickerQ]);
 
-  // Totaux
+  // ---------- totaux ----------
   const totals = useMemo(() => {
-    let ht = 0,
-      ttc = 0;
+    let ht = 0, ttc = 0;
     for (const l of lines) {
       const pu = getPU(l.articleId);
       const q = Number(l.qty || 0);
@@ -143,7 +190,7 @@ export default function MultiDevisModal({
 
   const canSubmit = lines.length > 0 && lines.every((l) => l.articleId && l.qty > 0);
 
-  // Ajouter une ligne depuis le pool
+  // ---------- actions ----------
   const addLineFromDemand = (d: any) => {
     if (!d?._id) return;
     setLines((ls) => [
@@ -196,6 +243,7 @@ export default function MultiDevisModal({
 
   if (!open) return null;
 
+  // ---------- UI ----------
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-sm p-3"
@@ -205,7 +253,7 @@ export default function MultiDevisModal({
       onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
       <div className="w-[min(96vw,1100px)] max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
-        {/* Header sticky */}
+        {/* Header */}
         <div className="sticky top-0 z-10 rounded-t-2xl border-b bg-white/95 backdrop-blur px-6 py-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -224,14 +272,14 @@ export default function MultiDevisModal({
               )}
             </div>
 
-            {/* Bouton Ajouter : cliquable immédiatement, spinner si chargement */}
+            {/* Bouton Ajouter */}
             <div className="relative">
               <button
                 onClick={() => {
                   setPickerOpen((p) => !p);
-                  if (!pool.length && !poolLoading) loadPool(); // charge au besoin
+                  if (!pool.length && !poolLoading) loadPool();
                 }}
-                disabled={!poolLoading && availableToAdd.length === 0} // désactivé uniquement s'il n'y a vraiment rien
+                disabled={!poolLoading && availableToAdd.length === 0}
                 className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
                 title="Ajouter une demande depuis la liste disponible"
               >
@@ -243,16 +291,16 @@ export default function MultiDevisModal({
                 Ajouter une demande
               </button>
 
-              {/* Popin de sélection */}
+              {/* Popin */}
               {pickerOpen && (
-                <div className="absolute right-0 mt-2 w-[420px] max-h-[60vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+                <div className="absolute right-0 mt-2 w-[460px] max-height-[60vh] max-h-[60vh] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
                   <div className="p-2 border-b bg-slate-50">
                     <div className="relative">
                       <FiSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         value={pickerQ}
                         onChange={(e) => setPickerQ(e.target.value)}
-                        placeholder="Rechercher par N° ou date…"
+                        placeholder="Rechercher par N°, date ou type…"
                         className="w-full rounded-lg border border-slate-300 bg-white pl-8 pr-3 py-2 text-sm focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none"
                       />
                     </div>
@@ -271,10 +319,15 @@ export default function MultiDevisModal({
                               onClick={() => addLineFromDemand(d)}
                               className="w-full text-left px-3 py-2 hover:bg-slate-50"
                             >
-                              <div className="flex items-center justify-between">
+                              <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
                                   <span className="h-2 w-2 rounded-full bg-[#F7C600]" />
                                   <span className="font-mono">{d.numero}</span>
+                                  {d.__type && (
+                                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-600">
+                                      {d.__type}
+                                    </span>
+                                  )}
                                 </div>
                                 <span className="text-xs text-slate-500">{fmtDate(d.createdAt)}</span>
                               </div>
@@ -300,7 +353,6 @@ export default function MultiDevisModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
-          {/* Tableau (≥ md) */}
           <div className="hidden md:block">
             <table className="w-full table-auto border-separate border-spacing-0 text-sm">
               <thead>
@@ -351,7 +403,7 @@ export default function MultiDevisModal({
                           }}
                         >
                           <option value="">— Choisir un article —</option>
-                          {articles.map((a) => (
+                          {visibleArticles.map((a) => (
                             <option key={a._id} value={a._id}>
                               {a.reference} — {a.designation}
                             </option>
@@ -360,13 +412,11 @@ export default function MultiDevisModal({
                         {loadingArticles && <p className="text-xs text-slate-400 mt-1">Chargement…</p>}
                       </td>
 
-                      <td className="p-2 align-middle text-right tabular-nums">{pu.toFixed(3)}</td>
+                      <td className="p-2 align-middle text-right tabular-nums">{getPU(ln.articleId).toFixed(3)}</td>
 
                       <td className="p-2 align-middle text-right">
                         <input
-                          type="number"
-                          min={1}
-                          value={ln.qty}
+                          type="number" min={1} value={ln.qty}
                           onChange={(e) => {
                             const v = Math.max(1, Number(e.target.value || 1));
                             setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, qty: v } : x)));
@@ -377,10 +427,7 @@ export default function MultiDevisModal({
 
                       <td className="p-2 align-middle text-right">
                         <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={ln.remisePct}
+                          type="number" min={0} max={100} value={ln.remisePct}
                           onChange={(e) => {
                             const v = Math.min(100, Math.max(0, Number(e.target.value || 0)));
                             setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, remisePct: v } : x)));
@@ -391,10 +438,7 @@ export default function MultiDevisModal({
 
                       <td className="p-2 align-middle text-right">
                         <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          value={ln.tvaPct}
+                          type="number" min={0} max={100} value={ln.tvaPct}
                           onChange={(e) => {
                             const v = Math.min(100, Math.max(0, Number(e.target.value || 0)));
                             setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, tvaPct: v } : x)));
@@ -424,7 +468,7 @@ export default function MultiDevisModal({
             </table>
           </div>
 
-          {/* Cartes (mobile) */}
+          {/* Mobile cards */}
           <div className="md:hidden space-y-3">
             {lines.map((ln, i) => {
               const pu = getPU(ln.articleId);
@@ -454,7 +498,7 @@ export default function MultiDevisModal({
                       }}
                     >
                       <option value="">— Choisir un article —</option>
-                      {articles.map((a) => (
+                      {visibleArticles.map((a) => (
                         <option key={a._id} value={a._id}>
                           {a.reference} — {a.designation}
                         </option>
@@ -472,9 +516,7 @@ export default function MultiDevisModal({
                     <div>
                       <label className="text-xs font-semibold text-slate-600">Qté</label>
                       <input
-                        type="number"
-                        min={1}
-                        value={ln.qty}
+                        type="number" min={1} value={ln.qty}
                         onChange={(e) => {
                           const v = Math.max(1, Number(e.target.value || 1));
                           setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, qty: v } : x)));
@@ -485,10 +527,7 @@ export default function MultiDevisModal({
                     <div>
                       <label className="text-xs font-semibold text-slate-600">Remise %</label>
                       <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={ln.remisePct}
+                        type="number" min={0} max={100} value={ln.remisePct}
                         onChange={(e) => {
                           const v = Math.min(100, Math.max(0, Number(e.target.value || 0)));
                           setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, remisePct: v } : x)));
@@ -499,10 +538,7 @@ export default function MultiDevisModal({
                     <div>
                       <label className="text-xs font-semibold text-slate-600">TVA %</label>
                       <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={ln.tvaPct}
+                        type="number" min={0} max={100} value={ln.tvaPct}
                         onChange={(e) => {
                           const v = Math.min(100, Math.max(0, Number(e.target.value || 0)));
                           setLines((ls) => ls.map((x, idx) => (idx === i ? { ...x, tvaPct: v } : x)));
