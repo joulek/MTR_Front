@@ -88,11 +88,11 @@ export default function LoginPage() {
             <div className="relative text-center text-white space-y-6 max-w-sm">
               <div className="mx-auto rounded-3xl inline-flex">
                 <Image
-                  src="/logo.png"
+                  src="/logoN.png"
                   alt="MTR"
-                  width={290}
-                  height={70}
-                  style={{ marginTop: "-80px" }}
+                  width={490}
+                  height={150}
+                  style={{ marginTop: "-60px" }}
                   priority
                 />
               </div>

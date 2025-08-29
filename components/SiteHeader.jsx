@@ -542,7 +542,7 @@ export default function SiteHeader({ mode = "public", onLogout }) {
             {/* logo → home */}
             <Link href={homeHref} className="flex items-center gap-3">
               <Image
-                src="/logo.png"
+                src="/logoN.png"
                 alt="MTR logo"
                 width={100}
                 height={100}

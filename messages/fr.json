@@ -710,7 +710,7 @@
     }
   },
   "devisCompression": {
-    "title": "Demande de devis – Ressort de Compression",
+    "title": "Ressort de Compression",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
