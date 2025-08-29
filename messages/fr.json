@@ -1,10 +1,24 @@
 {
   "auth": {
+    "setPasswordPage": {
+      "seo": {
+        "title": "Définir mon mot de passe | MTR Industry",
+        "description": "Créez votre mot de passe à partir du lien sécurisé reçu par email.",
+        "ogAlt": "Définir mon mot de passe – MTR Industry"
+      }
+    },
     "changePasswordPage": {
       "seo": {
         "title": "Changer mon mot de passe | MTR Industry",
         "description": "Mettez à jour votre mot de passe depuis votre espace client.",
         "ogAlt": "Changer le mot de passe – MTR Industry"
+      }
+    },
+    "resetPasswordPage": {
+      "seo": {
+        "title": "Réinitialiser le mot de passe | MTR Industry",
+        "description": "Saisissez votre email, le code reçu puis un nouveau mot de passe.",
+        "ogAlt": "Réinitialiser mon mot de passe – MTR Industry"
       }
     },
     "forgotPage": {
@@ -717,6 +731,11 @@
     "loading": "Chargement…"
   },
   "support": {
+    "seo": {
+      "title": "Aide & Support | MTR Industry",
+      "description": "Besoin d’aide ? Consultez notre FAQ ou contactez notre équipe.",
+      "ogAlt": "Centre d’aide — MTR Industry"
+    },
     "title": "Aide & Support",
     "intro": "Besoin d’aide ? Consultez notre FAQ ou contactez notre équipe.",
     "faq": {
@@ -748,7 +767,7 @@
     }
   },
   "devisAutre": {
-    "title": "Demande de devis – Autres Types",
+    "title": "Autres Types",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
@@ -790,7 +809,7 @@
     }
   },
   "devisFil": {
-    "title": "Demande de devis – Fil Dressé / coupé",
+    "title": "Fil Dressé coupé",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
@@ -811,7 +830,7 @@
     }
   },
   "devisGrille": {
-    "title": "Demande de devis – Grille métallique",
+    "title": "Grille métallique",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
@@ -832,7 +851,7 @@
     }
   },
   "devisTorsion": {
-    "title": "Demande de devis – Ressort de Torsion",
+    "title": "Ressort de Torsion",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
@@ -854,7 +873,7 @@
     }
   },
   "devisTraction": {
-    "title": "Demande de devis – Ressort de Traction",
+    "title": "Ressort de Traction",
     "searchPlaceholder": "Rechercher par N°, client ou date…",
     "searchAria": "Rechercher une demande de devis",
     "clearSearch": "Effacer la recherche",
@@ -882,5 +901,25 @@
     "perPage": "Par page",
     "prev": "Page précédente",
     "next": "Page suivante"
+  },
+  "seo": {
+    "category": {
+      "title": "{name} – Produits | MTR Industry",
+      "description": "Découvrez nos {name} : photos, caractéristiques et variantes. Parcourez tous les produits de la catégorie {name}.",
+      "keywords": "{name}, MTR Industry, produits, catégorie, catalogue",
+      "ogAlt": "{name} – MTR Industry"
+    },
+    "product": {
+      "title": "{name} | MTR Industry",
+      "descriptionFallback": "Découvrez {name} : photos en haute qualité et caractéristiques détaillées.",
+      "keywords": "{name}, MTR Industry, produit, caractéristiques, photos, prix",
+      "ogAlt": "{name} – MTR Industry"
+    }
+  },
+  "catalog": {
+    "home": "Accueil",
+    "seeDetail": "Voir détail →",
+    "noProducts": "Aucun produit",
+    "noProductsMsg": "Aucun produit trouvé pour cette catégorie."
   }
 }

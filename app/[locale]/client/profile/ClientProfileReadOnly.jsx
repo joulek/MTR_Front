@@ -164,7 +164,7 @@ export default function ClientProfileReadOnly() {
               icon={<HelpCircle className="w-5 h-5 text-[#FDC500]" />}
               label={t("shortcuts.help")}
               hint={t("shortcuts.helpHint")}
-              onClick={() => router.push(`/${locale}/support`)}
+              onClick={() => router.push(`/${locale}/client/support`)}
             />
             {/* Nouveau raccourci pour changer le mot de passe */}
             <Row

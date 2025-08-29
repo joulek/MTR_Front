@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   PhoneCall,
@@ -66,7 +65,6 @@ export default function HomeMTR() {
 
   const yearsExp = new Date().getFullYear() - 1994;
   const [locale, setLocale] = useState("fr");
-  const router = useRouter();
 
   // détecte la langue html/navigateur → fr|en
   useEffect(() => {
@@ -98,7 +96,7 @@ export default function HomeMTR() {
         const data = await res.json();
         if (!alive) return;
         setCategories(Array.isArray(data?.categories) ? data.categories : []);
-      } catch (err) {
+      } catch {
         if (alive) setCategories([]);
       } finally {
         if (alive) setLoadingCats(false);
@@ -668,18 +666,28 @@ export default function HomeMTR() {
               {[
                 { label: "À propos", id: "apropos" },
                 { label: "Produits", id: "specialites" },
-                { label: "Demande de devis", href: `/${locale}/devis` },
+                { label: "Demande de devis", href: `/${locale}/devis` }, // ← navigation externe
               ].map((l, i) => (
                 <li key={i}>
-                  <button
-                    onClick={() =>
-                      document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
-                  >
-                    <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
-                    {l.label}
-                  </button>
+                  {l.href ? (
+                    <Link
+                      href={l.href}
+                      className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
+                    >
+                      <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
+                      {l.label}
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })
+                      }
+                      className="group inline-flex items-center gap-2 hover:text-[#F5B301]"
+                    >
+                      <ChevronRight className="h-4 w-4 opacity-60 transition group-hover:text-[#F5B301]" />
+                      {l.label}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

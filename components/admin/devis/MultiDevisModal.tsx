@@ -20,10 +20,10 @@ type Props = {
   demands: any[];
   onCreated?: () => void;
 
-  /** Restreint le picker "Ajouter une demande" à ces types (ex: ["fil"], ["compression"]) */
+  /** 🔹 Filtrage par type UNIQUEMENT pour le picker "Ajouter une demande" */
   demandKinds?: string[];
 
-  /** Restreint la liste d’articles à ces types (ex: ["fil","fil_dresse_coupe"]) */
+  /** (Ignoré pour le moment) */
   articleKinds?: string[];
 };
 
@@ -35,7 +35,6 @@ export default function MultiDevisModal({
   demands,
   onCreated,
   demandKinds,
-  articleKinds,
 }: Props) {
   const [articles, setArticles] = useState<any[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
@@ -65,28 +64,10 @@ export default function MultiDevisModal({
     }
   };
 
-  // match article par type (robuste aux schémas variés)
-  const matchArticleKind = (a: any, kinds: string[]) => {
-    if (!kinds?.length) return true;
-    const ref = String(a?.reference ?? "").toLowerCase();
-    const label =
-      String(a?.type ?? a?.category ?? a?.famille ?? a?.kind ?? "").toLowerCase();
-    const tags = Array.isArray(a?.tags) ? a.tags.map((t: any) => String(t).toLowerCase()) : [];
-    return kinds.some((k) => {
-      const kk = String(k).toLowerCase();
-      return label.includes(kk) || tags.includes(kk) || ref.includes(kk);
-    });
-  };
-
-  // articles filtrés pour ce contexte
-  const visibleArticles = useMemo(() => {
-    if (!articleKinds?.length) return articles;
-    return articles.filter((a) => matchArticleKind(a, articleKinds));
-  }, [articles, articleKinds]);
-
   // ---------- init ----------
   useEffect(() => {
     if (!open) return;
+
     // Lignes depuis la sélection
     setLines(
       (demands || []).map((d) => ({
@@ -99,7 +80,7 @@ export default function MultiDevisModal({
       }))
     );
 
-    // Articles (on charge large puis on filtre côté client)
+    // Articles (affichés SANS filtrage)
     (async () => {
       setLoadingArticles(true);
       try {
@@ -108,7 +89,16 @@ export default function MultiDevisModal({
           credentials: "include",
         });
         const j = await r.json().catch(() => null);
-        setArticles(j?.data ?? []);
+
+        // Accepte plusieurs formats de payload
+        const arr =
+          (Array.isArray(j) ? j : null) ??
+          j?.data ??
+          j?.items ??
+          j?.results ??
+          [];
+
+        setArticles(arr);
       } catch {
         setArticles([]);
       } finally {
@@ -117,7 +107,7 @@ export default function MultiDevisModal({
     })();
   }, [open, demands]);
 
-  // ---------- pool multi-types (selon demandKinds) ----------
+  // ---------- pool multi-types (filtrage par type ici SEULEMENT) ----------
   const loadPool = useCallback(async () => {
     if (!client?._id) return;
     setPoolLoading(true);
@@ -153,6 +143,7 @@ export default function MultiDevisModal({
     }
   }, [client?._id, demandKinds]);
 
+  // Précharge le pool à l’ouverture
   useEffect(() => {
     if (open) loadPool();
   }, [open, loadPool]);
@@ -353,6 +344,7 @@ export default function MultiDevisModal({
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
+          {/* Desktop */}
           <div className="hidden md:block">
             <table className="w-full table-auto border-separate border-spacing-0 text-sm">
               <thead>
@@ -403,7 +395,7 @@ export default function MultiDevisModal({
                           }}
                         >
                           <option value="">— Choisir un article —</option>
-                          {visibleArticles.map((a) => (
+                          {articles.map((a) => (
                             <option key={a._id} value={a._id}>
                               {a.reference} — {a.designation}
                             </option>
@@ -498,7 +490,7 @@ export default function MultiDevisModal({
                       }}
                     >
                       <option value="">— Choisir un article —</option>
-                      {visibleArticles.map((a) => (
+                      {articles.map((a) => (
                         <option key={a._id} value={a._id}>
                           {a.reference} — {a.designation}
                         </option>

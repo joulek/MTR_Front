@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Facebook, Linkedin, MoreVertical, User, LogOut } from "lucide-react";
-import { CircleFlag } from "react-circle-flags";
 
 /* ---------------------------- API backend ---------------------------- */
 const BACKEND = (
@@ -544,8 +543,8 @@ export default function SiteHeader({ mode = "public", onLogout }) {
               <Image
                 src="/logoN.png"
                 alt="MTR logo"
-                width={100}
-                height={100}
+                width={150}
+                height={150}
                 className="object-contain"
                 priority
               />

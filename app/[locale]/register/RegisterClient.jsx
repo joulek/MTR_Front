@@ -416,7 +416,7 @@ export default function RegisterPage() {
                 style={{ marginTop: "-60px" }}
               >
                 <div className="mx-auto rounded-3xl inline-flex">
-                  <Image src="/logo.png" alt="MTR" width={290} height={70} priority />
+                  <Image src="/logoN.png" alt="MTR" width={1000} height={400} priority />
                 </div>
                 <h2
                   className="text-4xl font-extrabold leading-tight text-[#ffb400]"

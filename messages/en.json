@@ -1,5 +1,12 @@
 {
   "auth": {
+    "setPasswordPage": {
+      "seo": {
+        "title": "Set my password | MTR Industry",
+        "description": "Create your password using the secure link you received by email.",
+        "ogAlt": "Set my password – MTR Industry"
+      }
+    },
     "changePasswordPage": {
       "seo": {
         "title": "Change my password | MTR Industry",
@@ -11,6 +18,13 @@
       "seo": {
         "title": "Forgot password | MTR Industry",
         "description": "Enter your email to receive a password reset code.",
+        "ogAlt": "Reset my password – MTR Industry"
+      }
+    },
+    "resetPasswordPage": {
+      "seo": {
+        "title": "Reset password | MTR Industry",
+        "description": "Enter your email, the code you received, then a new password.",
         "ogAlt": "Reset my password – MTR Industry"
       }
     },
@@ -719,6 +733,11 @@
     "loading": "Loading…"
   },
   "support": {
+    "seo": {
+      "title": "Help & Support | MTR Industry",
+      "description": "Need help? Check our FAQ or contact our team.",
+      "ogAlt": "Help Center — MTR Industry"
+    },
     "title": "Help & Support",
     "intro": "Need help? Check our FAQ or contact our team.",
     "faq": {
@@ -884,5 +903,25 @@
     "perPage": "Per page",
     "prev": "Previous page",
     "next": "Next page"
+  },
+  "seo": {
+    "category": {
+      "title": "{name} – Products | MTR Industry",
+      "description": "Explore our {name}: photos, specifications and variants. Browse all items in the {name} category.",
+      "keywords": "{name}, MTR Industry, products, category, catalog",
+      "ogAlt": "{name} – MTR Industry"
+    },
+    "product": {
+      "title": "{name} | MTR Industry",
+      "descriptionFallback": "Explore {name}: high-quality photos and detailed specifications.",
+      "keywords": "{name}, MTR Industry, product, specifications, photos, price",
+      "ogAlt": "{name} – MTR Industry"
+    }
+  },
+  "catalog": {
+    "home": "Home",
+    "seeDetail": "View details →",
+    "noProducts": "No products",
+    "noProductsMsg": "No products found for this category."
   }
 }

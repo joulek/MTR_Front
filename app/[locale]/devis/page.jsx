@@ -1,15 +1,18 @@
+// app/[locale]/devis/page.jsx
 import DevisClient from "./DevisClient";
 import { getTranslations } from "next-intl/server";
-import Script from "next/script";
 
-const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+const APP_URL =
+  (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-export async function generateMetadata({ params: { locale } }) {
-  // clés déjà présentes dans tes messages: auth.devis.seo
+// ---------- SEO ----------
+export async function generateMetadata({ params }) {
+  const { locale } = await params; // ✅ await params
   const t = await getTranslations({ locale, namespace: "auth.devis.seo" });
 
   const title = t("title", {
-    default: "Demander un devis – Ressorts de compression, traction & torsion | MTR Industry",
+    default:
+      "Demander un devis – Ressorts de compression, traction & torsion | MTR Industry",
   });
   const description = t("description", {
     default:
@@ -19,7 +22,7 @@ export async function generateMetadata({ params: { locale } }) {
   const url = `${APP_URL}/${locale}/devis`;
   const images = [
     {
-      url: `${APP_URL}/og/devis.jpg`, // ajoute cette image (1200x630) dans /public/og/
+      url: `${APP_URL}/og/devis.jpg`,
       width: 1200,
       height: 630,
       alt: t("ogAlt", { default: "Demande de devis MTR Industry" }),
@@ -29,10 +32,6 @@ export async function generateMetadata({ params: { locale } }) {
   return {
     title,
     description,
-    alternates: {
-      canonical: `/${locale}/devis`,
-      languages: { fr: "/fr/devis", en: "/en/devis" },
-    },
     keywords: [
       "devis ressort",
       "ressort compression",
@@ -42,12 +41,20 @@ export async function generateMetadata({ params: { locale } }) {
       "grille métallique",
       "industrie",
     ],
+    alternates: {
+      canonical: url, // ✅ absolu (plus sûr si pas de metadataBase)
+      languages: {
+        fr: `${APP_URL}/fr/devis`,
+        en: `${APP_URL}/en/devis`,
+        ar: `${APP_URL}/ar/devis`,
+      },
+    },
     openGraph: {
-      type: "website",
+      type: "website", // ✅ pas 'product'
       url,
+      siteName: "MTR Industry",
       title,
       description,
-      siteName: "MTR Industry",
       images,
       locale,
     },
@@ -57,37 +64,52 @@ export async function generateMetadata({ params: { locale } }) {
       description,
       images: images.map((i) => i.url),
     },
-    // Cette page est publique → on laisse index: true
     robots: { index: true, follow: true },
   };
 }
 
-export default async function Page({ params: { locale } }) {
+// ---------- Page ----------
+export default async function Page({ params }) {
+  const { locale } = await params; // ✅ await params
+
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: locale === "fr" ? "Accueil" : "Home", item: `${APP_URL}/${locale}` },
-      { "@type": "ListItem", position: 2, name: locale === "fr" ? "Demande de devis" : "Request a quote", item: `${APP_URL}/${locale}/devis` },
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: locale === "fr" ? "Accueil" : "Home",
+        item: `${APP_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: locale === "fr" ? "Demande de devis" : "Request a quote",
+        item: `${APP_URL}/${locale}/devis`,
+      },
     ],
   };
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: "Demander un devis – MTR Industry",
+    name:
+      locale === "fr"
+        ? "Demander un devis – MTR Industry"
+        : "Request a quote – MTR Industry",
     description:
-      "Formulaire multi-produits pour obtenir un devis sur ressorts et articles en fil métallique.",
+      locale === "fr"
+        ? "Formulaire multi-produits pour obtenir un devis sur ressorts et articles en fil métallique."
+        : "Multi-product form to request a quote for springs and wire parts.",
     primaryImageOfPage: `${APP_URL}/og/devis.jpg`,
     breadcrumb,
   };
 
   return (
     <>
-      <Script
-        id="ldjson-devis"
+      <script
         type="application/ld+json"
-        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <DevisClient />

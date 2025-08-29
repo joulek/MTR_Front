@@ -2,13 +2,11 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { Mail, Phone, HelpCircle, MessageCircle } from "lucide-react";
-import ClientLayout from "../client/layout"; // ajuste le chemin si besoin
 
-export default function SupportPage() {
+export default function SupportPageClient() {
   const t = useTranslations("support");
 
   return (
-    <ClientLayout>
       <div className="min-h-screen bg-white text-gray-800">
         <div className="max-w-4xl mx-auto p-6 space-y-10">
           {/* Titre */}
@@ -65,31 +63,9 @@ export default function SupportPage() {
             </div>
           </section>
 
-          {/* Ressources */}
-          <section>
-            <h2 className="text-xl font-semibold mb-4 text-[#001F54]">
-              {t("resources.title")}
-            </h2>
-            <ul className="list-disc list-inside space-y-1 text-gray-700">
-              <li>
-                <a href="/guide-utilisateur" className="text-[#001F54] hover:text-[#FDC500]">
-                  {t("resources.guide")}
-                </a>
-              </li>
-              <li>
-                <a href="/faq" className="text-[#001F54] hover:text-[#FDC500]">
-                  {t("resources.faq")}
-                </a>
-              </li>
-              <li>
-                <a href="/politique-confidentialite" className="text-[#001F54] hover:text-[#FDC500]">
-                  {t("resources.privacy")}
-                </a>
-              </li>
-            </ul>
-          </section>
+          
         </div>
       </div>
-    </ClientLayout>
+   
   );
 }

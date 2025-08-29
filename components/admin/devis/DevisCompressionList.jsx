@@ -131,7 +131,7 @@ export default function DevisCompressionList() {
       const numero = String(d?.numero || "").toLowerCase();
       const client = `${d?.user?.prenom || ""} ${d?.user?.nom || ""}`.trim().toLowerCase();
       let dateStr = "";
-      try { dateStr = new Date(d?.createdAt).toLocaleDateString().toLowerCase(); } catch {}
+      try { dateStr = new Date(d?.createdAt).toLocaleDateString().toLowerCase(); } catch { }
       return numero.includes(needle) || client.includes(needle) || dateStr.includes(needle);
     });
   }, [items, q]);
@@ -483,15 +483,19 @@ export default function DevisCompressionList() {
           </>
         )}
       </div>
-
       <MultiDevisModal
-  open={open}
-  onClose={onClose}
-  demands={demands}
-  onCreated={refresh}
-  demandKinds={["compression"]}
-  articleKinds={["compression"]}
-/>
+        open={multiOpen}
+        onClose={() => setMultiOpen(false)}
+        demands={multiDemands}
+        onCreated={() => {
+          setMultiOpen(false);
+          setSelectedIds([]);
+          load(); // recharge la liste après création
+        }}
+        demandKinds={["compression"]}
+        articleKinds={["compression"]}
+      />
+
 
 
       {/* Toast */}
@@ -502,7 +506,7 @@ export default function DevisCompressionList() {
             "fixed z-50 top-4 right-4 sm:right-6 rounded-xl border px-4 py-2 shadow-lg",
             toast.kind === "success" && "bg-emerald-50 border-emerald-200 text-emerald-900",
             toast.kind === "warning" && "bg-amber-50 border-amber-200 text-amber-900",
-            toast.kind === "error"   && "bg-red-50 border-red-200 text-red-800",
+            toast.kind === "error" && "bg-red-50 border-red-200 text-red-800",
             (!toast.kind || toast.kind === "info") && "bg-blue-50 border-blue-200 text-blue-800",
           ].filter(Boolean).join(" ")}
         >
