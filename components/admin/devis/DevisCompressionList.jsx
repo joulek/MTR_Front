@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
 import { FiSearch, FiXCircle } from "react-icons/fi";
-import DevisModal from "@/components/admin/devis/DevisModal";
 import MultiDevisModal from "@/components/admin/devis/MultiDevisModal";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
@@ -47,9 +46,7 @@ export default function DevisCompressionList() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Modales
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedDemande, setSelectedDemande] = useState(null);
+  // Devis existants (pour lien "Ouvrir devis")
   const [devisMap, setDevisMap] = useState({}); // {demandeId: {numero, pdf}}
 
   // --- Toast (message non bloquant) ---
@@ -192,11 +189,7 @@ export default function DevisCompressionList() {
     }
   }
 
-  // Modales
-  function openDevis(d) {
-    setSelectedDemande({ ...d, demandeNumero: d?.numero || "" });
-    setModalOpen(true);
-  }
+  // Ouvrir la modale multi-devis à partir de la sélection
   function openMultiFromSelection() {
     const chosen = items.filter((it) => selectedIds.includes(it._id));
     if (!chosen.length) return;
@@ -219,7 +212,7 @@ export default function DevisCompressionList() {
             {t("title")}
           </h1>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-[320px] lg:w-[420px]">
               <FiSearch aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
@@ -380,7 +373,6 @@ export default function DevisCompressionList() {
                             </div>
                           </td>
 
-                          {/* Devis */}
                         </tr>
                       );
                     })}
@@ -417,7 +409,6 @@ export default function DevisCompressionList() {
                 const docs = (d?.documents || [])
                   .map((doc, idx) => ({ ...doc, index: doc.index ?? idx, filename: cleanFilename(doc.filename) }))
                   .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
-               
 
                 return (
                   <div key={d._id} className="py-3">
@@ -458,7 +449,6 @@ export default function DevisCompressionList() {
                         ) : <span className="text-gray-500">—</span>}
                       </div>
 
-                    
                     </div>
 
                     <p className="mt-2 text-xs font-semibold text-gray-500">{t("columns.attachments")}</p>
@@ -494,20 +484,15 @@ export default function DevisCompressionList() {
         )}
       </div>
 
-      {/* Modales */}
-      <DevisModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        demande={selectedDemande}
-        onCreated={() => { setModalOpen(false); load(); }}
-      />
-
       <MultiDevisModal
-        open={multiOpen}
-        onClose={() => setMultiOpen(false)}
-        demands={multiDemands}
-        onCreated={() => { setMultiOpen(false); setSelectedIds([]); load(); }}
-      />
+  open={open}
+  onClose={onClose}
+  demands={demands}
+  onCreated={refresh}
+  demandKinds={["compression"]}
+  articleKinds={["compression"]}
+/>
+
 
       {/* Toast */}
       {toast && (
