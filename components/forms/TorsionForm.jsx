@@ -24,7 +24,7 @@ export default function TorsionForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  /* ===================== Limite fichiers (exactement comme Compression) ===================== */
+  /* ===================== Limite fichiers ===================== */
   const MAX_FILES = 4;
 
   function uniqueBySignature(arr = []) {
@@ -51,7 +51,6 @@ export default function TorsionForm() {
     const incoming = Array.from(list || []);
     if (incoming.length === 0) return;
 
-    // fusion avec l'existant (ou remplacement si append=false)
     const base = append ? (files || []) : [];
     const merged = uniqueBySignature([...base, ...incoming]);
 
@@ -61,8 +60,6 @@ export default function TorsionForm() {
 
       setFiles(kept);
       syncInputFiles(fileInputRef, kept);
-
-      // 🔔 message unique via i18n
       setErr(t("limit"));
 
       console.warn("[Upload] Dépassement de la limite de fichiers:", {
@@ -78,40 +75,84 @@ export default function TorsionForm() {
     setFiles(merged);
     syncInputFiles(fileInputRef, merged);
   }
-  /* ========================================================================================= */
+  /* =========================================================== */
 
-  // ----- i18n options (affichage) -----
+  // ----- i18n options -----
   const windingOptions = t.raw("windingOptions") || [];
   const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
 
-  // On récupère la liste i18n et on EXPLOSE un éventuel item “(SM, SH)” en 2 choix distincts.
-  const materialOptionsUI = (() => {
-    const raw = t.raw("materialOptions") || [];
-    const fallback = ["Fil ressort noir SH", "Fil ressort noir SM", "Fil ressort galvanisé", "Fil ressort inox"];
-    const list = raw.length ? raw : fallback;
+  /* ===================== Matière: value ≠ label (fix enum) =====================
 
-    const out = [];
-    for (const label of list) {
-      const s = String(label);
-      const looksCombined = /\bSM\b.*\bSH\b|\bSH\b.*\bSM\b|SM\/SH|SM,\s*SH/i.test(s);
-      if (looksCombined) {
-        // Déterminer langue du libellé pour l’UI
-        const isEN = /black|spring wire/i.test(s);
-        if (isEN) {
-          out.push("Black spring wire SH", "Black spring wire SM");
-        } else {
-          out.push("Fil ressort noir SH", "Fil ressort noir SM");
-        }
-      } else {
-        out.push(s);
+     Le backend attend EXACTEMENT l'une de ces 4 valeurs:
+       - "Fil ressort noir SH"
+       - "Fil ressort noir SM"
+       - "Fil ressort galvanisé"
+       - "Fil ressort inox"
+
+     On construit ci-dessous des options { value, label }:
+       - value = valeur canonique (exact enum backend)
+       - label = ce que tu veux afficher (peut contenir (SM), (SH), etc.)
+     ========================================================================== */
+
+  const MATERIAL_CANON = [
+    {
+      value: "Fil ressort noir SH",
+      labels: [
+        "Fil ressort noir SH",
+        "Fil ressort noir (SH)",
+        "Black spring wire SH",
+        "Noir SH",
+        "SH",
+      ],
+    },
+    {
+      value: "Fil ressort noir SM",
+      labels: [
+        "Fil ressort noir SM",
+        "Fil ressort noir (SM)",
+        "Black spring wire SM",
+        "Noir SM",
+        "SM",
+      ],
+    },
+    {
+      value: "Fil ressort galvanisé",
+      labels: ["Fil ressort galvanisé", "Galvanized spring wire", "Galvanisé"],
+    },
+    {
+      value: "Fil ressort inox",
+      labels: ["Fil ressort inox", "Stainless steel spring wire", "Inox", "Stainless"],
+    },
+  ];
+
+  // Récupère d'éventuels libellés i18n (qui peuvent contenir SM/SH combinés) et les "explose" proprement.
+  const rawMaterialLabels = t.raw("materialOptions") || [];
+  function splitCombined(label) {
+    const s = String(label);
+    if (/\bSM\b.*\bSH\b|\bSH\b.*\bSM\b|SM\/SH|SM,\s*SH/i.test(s)) {
+      // EN vs FR
+      if (/black|spring wire/i.test(s)) {
+        return ["Black spring wire SH", "Black spring wire SM"];
       }
+      return ["Fil ressort noir SH", "Fil ressort noir SM"];
     }
-    // Nettoyage doublons éventuels
-    return Array.from(new Set(out));
-  })();
+    return [s];
+  }
+  const expandedMaterialLabels =
+    rawMaterialLabels.length > 0
+      ? rawMaterialLabels.flatMap(splitCombined)
+      : MATERIAL_CANON.map((x) => x.value);
+
+  // Mappe chaque label d'UI vers la valeur canonique du backend.
+  const materialOptionsUI = Array.from(new Set(expandedMaterialLabels)).map((lab) => {
+    const canon = MATERIAL_CANON.find((m) =>
+      m.labels.map((x) => x.toLowerCase()).includes(String(lab).toLowerCase())
+    );
+    return { value: canon ? canon.value : String(lab), label: String(lab) };
+  });
 
   // --------------------------------------------------------------------
-  //  ✅ Normalisation EN/variantes -> FR EXACT (valeurs backend)
+  //  ✅ Normalisation EN/variantes -> FR EXACT (sécurité supplémentaire)
   const FR_MATIERES = [
     "Fil ressort noir SH",
     "Fil ressort noir SM",
@@ -128,21 +169,18 @@ export default function TorsionForm() {
   const FR_ENROULEMENTS = ["Enroulement gauche", "Enroulement droite"];
   const EN_ENROULEMENTS = ["Left winding", "Right winding"];
 
-  // Synonymes tolérés
   const EXTRA_SYNONYMS = {
     matiere: {
-      // variantes FR
-      "fil ressort noir (sm, sh)": "Fil ressort noir SH", // fallback → SH
-      "fil ressort noir sm/sh": "Fil ressort noir SH",
-      // variantes courtes
+      "fil ressort noir sm": "Fil ressort noir SM",
+      "fil ressort noir sh": "Fil ressort noir SH",
       "noir sh": "Fil ressort noir SH",
       "noir sm": "Fil ressort noir SM",
-      // EN raccourcis
       "black sh": "Fil ressort noir SH",
       "black sm": "Fil ressort noir SM",
       galvanized: "Fil ressort galvanisé",
+      galvanise: "Fil ressort galvanisé",
       inox: "Fil ressort inox",
-      "stainless": "Fil ressort inox",
+      stainless: "Fil ressort inox",
     },
     enroulement: {
       gauche: "Enroulement gauche",
@@ -155,23 +193,20 @@ export default function TorsionForm() {
   function normalizeField(fd, name, frList, enList, extras = {}) {
     let v = fd.get(name);
     if (!v) return;
-    if (frList.includes(v)) return; // déjà FR exact
+    if (frList.includes(v)) return;
 
-    // Essai 1: correspondance exacte EN
     let i = enList.indexOf(v);
     if (i >= 0) {
       fd.set(name, frList[i]);
       return;
     }
-    // Essai 2: lower-case
     const low = String(v).toLowerCase().trim();
-    const enLow = enList.map(s => s.toLowerCase());
+    const enLow = enList.map((s) => s.toLowerCase());
     i = enLow.indexOf(low);
     if (i >= 0) {
       fd.set(name, frList[i]);
       return;
     }
-    // Essai 3: synonymes libres
     if (extras[low]) fd.set(name, extras[low]);
   }
   function normalizeDual(fd, baseName, frList, enList, extras = {}) {
@@ -246,7 +281,7 @@ export default function TorsionForm() {
       });
 
       let payload = null;
-      try { payload = await res.json(); } catch { }
+      try { payload = await res.json(); } catch {}
 
       if (res.ok) {
         finishedRef.current = true;
@@ -308,11 +343,11 @@ export default function TorsionForm() {
           <Input name="L2" label={t("L2")} required />
           <Input name="quantite" label={t("quantity")} type="number" min="1" required />
 
-          {/* Matière: UI avec SH / SM distincts */}
+          {/* Matière: UI labels (peuvent contenir SM/SH) mais value = enum exact */}
           <SelectBase
             name="matiere"
             label={t("material")}
-            options={materialOptionsUI}
+            options={materialOptionsUI}  // <-- {label, value}
             placeholder={selectPlaceholder}
             required
           />
@@ -418,7 +453,7 @@ export default function TorsionForm() {
   );
 }
 
-/* === UI helpers (mêmes styles que ta version) === */
+/* === UI helpers === */
 function SectionTitle({ children, className = "" }) {
   return (
     <div className={`mb-3 mt-4 ${className}`}>
@@ -490,9 +525,15 @@ function SelectBase({ label, name, options = [], required, placeholder = "Sélec
         }}
       >
         <option value="" style={{ color: "#64748b" }}>{placeholder}</option>
-        {options.map((o) => (
-          <option key={o} value={o} style={{ color: "#002147" }}>{o}</option>
-        ))}
+        {options.map((o) => {
+          const val = typeof o === "string" ? o : o.value;
+          const lab = typeof o === "string" ? o : o.label;
+          return (
+            <option key={val} value={val} style={{ color: "#002147" }}>
+              {lab}
+            </option>
+          );
+        })}
       </select>
     </div>
   );

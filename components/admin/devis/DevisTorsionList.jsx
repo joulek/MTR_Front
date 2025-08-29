@@ -64,14 +64,14 @@ export default function AdminDevisTorsionPage() {
     try {
       setErr("");
       setLoading(true);
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTorsion`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/torsion`, {
         method: "GET",
         cache: "no-store",
         credentials: "include",
       });
 
       if (res.status === 401) {
-        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/devisTorsion")}`);
+        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/torsion")}`);
         return;
       }
       if (res.status === 403) {
@@ -154,7 +154,7 @@ export default function AdminDevisTorsionPage() {
   // Ouverture PDF (⚠️ manquait dans ton fichier)
   async function viewPdfById(id) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTorsion/${id}/pdf`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/torsion/${id}/pdf`, {
         method: "GET",
         credentials: "include",
       });
@@ -174,7 +174,7 @@ export default function AdminDevisTorsionPage() {
   // Ouverture doc
   async function viewDocByIndex(id, index) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTorsion/${id}/document/${index}`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/torsion/${id}/document/${index}`, {
         method: "GET",
         credentials: "include",
       });
@@ -496,8 +496,8 @@ export default function AdminDevisTorsionPage() {
           setSelectedIds([]);
           load();
         }}
-        demandKinds={["devisTorsion"]}
-        articleKinds={["devisTorsion", "devisTorsion"]}
+        demandKinds={["torsion"]}
+        articleKinds={["torsion", "torsion"]}
       />
 
       {/* Toast */}

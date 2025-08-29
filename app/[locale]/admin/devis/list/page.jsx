@@ -63,7 +63,7 @@ const API_TYPE_MAP = {
 };
 
 /* ---------- Small utilities ---------- */
-// debounce داخل نفس الملف (باش ما نعملوش ملف hook)
+// debounce
 function useDebounced(value, delay = 300) {
   const [v, setV] = useState(value);
   useEffect(() => {
@@ -73,7 +73,7 @@ function useDebounced(value, delay = 300) {
   return v;
 }
 
-// نفّذ وظائف على دفعات (batchSize بالتوازي), لتقليل الضغط على السيرفر/المتصفح
+// exécuter des jobs en paquets (batch)
 async function fetchInBatches(fns, batchSize = 6) {
   const out = [];
   for (let i = 0; i < fns.length; i += batchSize) {
@@ -91,7 +91,7 @@ export default function DevisList() {
 
   const [err, setErr] = useState("");
   const [loadingDemandes, setLoadingDemandes] = useState(true);
-  const [updatingDetails, setUpdatingDetails] = useState(false);
+  const [updatingDetails, setUpdatingDetails] = useState(false); // gardé pour la logique, plus affiché
 
   const [demandes, setDemandes] = useState([]);
 
@@ -102,10 +102,9 @@ export default function DevisList() {
 
   const [typeFilter, setTypeFilter] = useState("all");
 
-  // Cache للتفاصيل: demandeId -> {devisNumero, devisPdf, demandeNumeros, types, date}
+  // Cache détails: demandeId -> {devisNumero, devisPdf, demandeNumeros, types, date}
   const detailsCacheRef = useRef(new Map());
-  // tick لإجبار React يعيد الرندر بعد ما الكاش يتعبّى
-  const [tick, setTick] = useState(0);
+  const [tick, setTick] = useState(0); // force rerender après màj cache
 
   /* ---------- API helpers ---------- */
   const fetchOneType = useCallback(async (seg) => {
@@ -137,7 +136,7 @@ export default function DevisList() {
     return results.flat();
   }, [fetchOneType]);
 
-  /* ---------- Step 1: حمّل demandes فقط ---------- */
+  /* ---------- Step 1: charger demandes ---------- */
   const loadDemandes = useCallback(async () => {
     try {
       setErr("");
@@ -168,7 +167,7 @@ export default function DevisList() {
       }
 
       setDemandes(items);
-      // لا نمسح الكاش باش تبقى التفاصيل القديمة تتعرض فورًا
+      // ne pas vider le cache pour garder les détails déjà connus
     } catch (e) {
       if (
         String(e?.message) === "__401__" ||
@@ -187,7 +186,7 @@ export default function DevisList() {
     loadDemandes();
   }, [loadDemandes]);
 
-  /* ---------- Step 2: ابنِ صفوف أساسية من demandes (بدون تفاصيل) ---------- */
+  /* ---------- Step 2: rows de base ---------- */
   const baseRows = useMemo(() => {
     return (demandes || []).map((d) => {
       const client = `${d?.user?.prenom || ""} ${d?.user?.nom || ""}`.trim();
@@ -201,16 +200,15 @@ export default function DevisList() {
         client,
         date: d?.createdAt || "",
         types: Array.from(new Set(types)),
-        devisNumero: "", // يكمّل لاحقًا
+        devisNumero: "",
         devisPdf: "",
         demandeNumeros: [d.numero],
       };
     });
   }, [demandes, typeFilter]);
 
-  /* ---------- Step 3: دمج التفاصيل الموجودة في الكاش + تجميع حسب رقم devis ---------- */
+  /* ---------- Step 3: merge cache + group by n° devis ---------- */
   const rows = useMemo(() => {
-    // ادمج الكاش
     const merged = baseRows.map((r) => {
       const det = detailsCacheRef.current.get(r.demandeId);
       if (!det) return r;
@@ -225,7 +223,6 @@ export default function DevisList() {
       };
     });
 
-    // اجمع الصفوف اللي عندها نفس رقم devis
     const grouped = new Map();
     for (const r of merged) {
       const key = r.devisNumero || r.demandeId;
@@ -252,7 +249,7 @@ export default function DevisList() {
     );
   }, [baseRows, tick]);
 
-  /* ---------- Step 4: فلترة ---------- */
+  /* ---------- Step 4: filtre recherche ---------- */
   const filtered = useMemo(() => {
     const needle = dq.trim().toLowerCase();
     if (!needle) return rows;
@@ -276,7 +273,7 @@ export default function DevisList() {
     });
   }, [rows, dq]);
 
-  /* ---------- Step 5: Pagination ---------- */
+  /* ---------- Step 5: pagination ---------- */
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     if (page > totalPages) setPage(totalPages);
@@ -293,9 +290,8 @@ export default function DevisList() {
     return { pageItems: filtered.slice(start, end), total };
   }, [filtered, page, pageSize]);
 
-  /* ---------- Step 6: هات تفاصيل فقط للصفحة المعروضة (دفعات) ---------- */
+  /* ---------- Step 6: charger détails des items visibles ---------- */
   useEffect(() => {
-    // IDs المطلوبة ولم تُحمّل تفاصيلها بعد
     const idsToFetch = pageItems
       .map((r) => r.demandeId)
       .filter((id) => id && !detailsCacheRef.current.has(id));
@@ -308,7 +304,6 @@ export default function DevisList() {
 
     (async () => {
       const jobs = idsToFetch.map((id) => {
-        // نحتاج demandeNumero للـ id (لاستدعاء endpoint نفسه اللي عندك)
         const r = pageItems.find((x) => x.demandeId === id);
         const numero = r?.demandeNumero || "";
         return async () => {
@@ -341,9 +336,7 @@ export default function DevisList() {
             devisNumero: j?.devis?.numero || "",
             devisPdf: j?.pdf || "",
             demandeNumeros: metaNums.length ? uniq(metaNums) : undefined,
-            types: uniq((metaTypesRaw || []).map(normalizeType)).filter(
-              Boolean
-            ),
+            types: uniq((metaTypesRaw || []).map(normalizeType)).filter(Boolean),
             date: j?.devis?.createdAt || "",
           };
 
@@ -616,9 +609,7 @@ export default function DevisList() {
                   onPageSizeChange={setPageSize}
                   pageSizeOptions={[5, 10, 20, 50]}
                 />
-                {updatingDetails && (
-                  <div className="mt-2 text-xs opacity-60">Mise à jour…</div>
-                )}
+                {/* Message "Mise à jour…" supprimé */}
               </div>
             </>
           )}

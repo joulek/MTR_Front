@@ -249,8 +249,8 @@
       "material": "Material",
       "selectPlaceholder": "-- Select --",
       "materialOptions": [
-        "Black spring wire (SM)",
-        "Black spring wire (SH)",
+        "Black spring wire SM",
+        "Black spring wire SH",
         "Galvanized spring wire",
         "Stainless steel spring wire"
       ],

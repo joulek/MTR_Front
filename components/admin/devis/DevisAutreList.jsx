@@ -64,14 +64,14 @@ export default function DevisAutrePage() {
     try {
       setErr("");
       setLoading(true);
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisAutre`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/autre`, {
         method: "GET",
         cache: "no-store",
         credentials: "include",
       });
 
       if (res.status === 401) {
-        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/devisAutre")}`);
+        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/autre")}`);
         return;
       }
       if (res.status === 403) {
@@ -154,7 +154,7 @@ export default function DevisAutrePage() {
   // Ouverture PDF / doc
   async function viewPdfById(id) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisAutre/${id}/pdf`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/autre/${id}/pdf`, {
         method: "GET",
         credentials: "include",
       });
@@ -172,7 +172,7 @@ export default function DevisAutrePage() {
   }
   async function viewDocByIndex(id, index) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisAutre/${id}/document/${index}`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/autre/${id}/document/${index}`, {
         method: "GET",
         credentials: "include",
       });
@@ -492,8 +492,8 @@ export default function DevisAutrePage() {
           setSelectedIds([]);
           load(); // recharge la liste après création
         }}
-        demandKinds={["devisAutre"]}
-        articleKinds={["devisAutre"]}
+        demandKinds={["autre"]}
+        articleKinds={["autre"]}
       />
 
 

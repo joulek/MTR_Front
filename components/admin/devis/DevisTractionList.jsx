@@ -26,7 +26,7 @@ function shortDate(d) {
   }
 }
 
-export default function AdminDevisTractionPage() {
+export default function AdmintractionPage() {
   const t = useTranslations("devisTraction");
   const router = useRouter();
 
@@ -64,14 +64,14 @@ export default function AdminDevisTractionPage() {
     try {
       setErr("");
       setLoading(true);
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTraction`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/traction`, {
         method: "GET",
         cache: "no-store",
         credentials: "include",
       });
 
       if (res.status === 401) {
-        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/devisTraction")}`);
+        router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/traction")}`);
         return;
       }
       if (res.status === 403) {
@@ -154,7 +154,7 @@ export default function AdminDevisTractionPage() {
   // Ouverture PDF / doc
   async function viewPdfById(id) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTraction/${id}/pdf`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/traction/${id}/pdf`, {
         method: "GET",
         credentials: "include",
       });
@@ -172,7 +172,7 @@ export default function AdminDevisTractionPage() {
   }
   async function viewDocByIndex(id, index) {
     try {
-      const res = await fetch(`${BACKEND}/api/admin/devis/devisTraction/${id}/document/${index}`, {
+      const res = await fetch(`${BACKEND}/api/admin/devis/traction/${id}/document/${index}`, {
         method: "GET",
         credentials: "include",
       });
@@ -492,8 +492,8 @@ export default function AdminDevisTractionPage() {
           setSelectedIds([]);
           load(); // recharge la liste après création
         }}
-        demandKinds={["devisTraction"]}
-        articleKinds={["devisTraction"]}
+        demandKinds={["traction"]}
+        articleKinds={["traction"]}
       />
 
 
