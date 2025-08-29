@@ -1,7 +1,21 @@
 {
   "auth": {
+    "changePasswordPage": {
+      "seo": {
+        "title": "Change my password | MTR Industry",
+        "description": "Update your password from your client area.",
+        "ogAlt": "Change password – MTR Industry"
+      }
+    },
+    "forgotPage": {
+      "seo": {
+        "title": "Forgot password | MTR Industry",
+        "description": "Enter your email to receive a password reset code.",
+        "ogAlt": "Reset my password – MTR Industry"
+      }
+    },
     "forgot": "Forgot password?",
-    "forgotTitle": "Mot de passe oublié",
+    "forgotTitle": "Forgot password?",
     "code": "Code",
     "confirmReset": "Confirm reset",
     "forgotHintCode": "Enter your email: we will send you a reset code.",
@@ -73,7 +87,26 @@
       "registerFailed": "Account creation failed!"
     },
     "client": {
+      "reclamationForm": {
+        "seo": {
+          "title": "Submit a claim – Client area | MTR Industry",
+          "description": "Submit a claim against a quote, purchase order, delivery note or invoice. Add details and attachments.",
+          "ogAlt": "Submit a claim – MTR Industry"
+        }
+      },
+      "layout": {
+        "seo": {
+          "title": "Client area | MTR Industry",
+          "description": "Access your MTR Industry client area.",
+          "ogAlt": "MTR Industry client area"
+        }
+      },
       "claimsPage": {
+        "seo": {
+          "title": "My claims – Client area | MTR Industry",
+          "description": "View, filter and download your claims (PDF, details, status).",
+          "ogAlt": "Preview of the My claims page – MTR Industry"
+        },
         "title": "My Claims",
         "subtitle": "Track your claims and download their PDFs.",
         "searchPlaceholder": "Search (number, type, nature, expectation, date…)",
@@ -626,6 +659,11 @@
     }
   },
   "profile": {
+    "seo": {
+      "title": "My Account – Client Area | MTR Industry",
+      "description": "Access your account details, contact information and quick actions (claims, support, password).",
+      "ogAlt": "MTR Industry client area"
+    },
     "userFallback": "User",
     "lang": {
       "fr": "French",

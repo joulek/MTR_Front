@@ -1,5 +1,19 @@
 {
   "auth": {
+    "changePasswordPage": {
+      "seo": {
+        "title": "Changer mon mot de passe | MTR Industry",
+        "description": "Mettez à jour votre mot de passe depuis votre espace client.",
+        "ogAlt": "Changer le mot de passe – MTR Industry"
+      }
+    },
+    "forgotPage": {
+      "seo": {
+        "title": "Mot de passe oublié | MTR Industry",
+        "description": "Saisissez votre email pour recevoir un code de réinitialisation de mot de passe.",
+        "ogAlt": "Réinitialiser mon mot de passe – MTR Industry"
+      }
+    },
     "confirmReset": "Confirmer la réinitialisation",
     "forgot": "Mot de passe oublié?",
     "forgotTitle": "Mot de passe oublié",
@@ -65,7 +79,26 @@
       "registerFailed": "Création du compte a échoué !"
     },
     "client": {
+      "reclamationForm": {
+        "seo": {
+          "title": "Passer une réclamation – Espace client | MTR Industry",
+          "description": "Soumettez une réclamation sur un devis, bon de commande, bon de livraison ou facture. Ajoutez des précisions et des pièces jointes.",
+          "ogAlt": "Passer une réclamation – MTR Industry"
+        }
+      },
+      "layout": {
+        "seo": {
+          "title": "Espace client | MTR Industry",
+          "description": "Accédez à votre espace client MTR Industry.",
+          "ogAlt": "Espace client MTR Industry"
+        }
+      },
       "claimsPage": {
+        "seo": {
+          "title": "Mes réclamations – Espace client | MTR Industry",
+          "description": "Consultez, filtrez et téléchargez vos réclamations client (PDF, détails, statut).",
+          "ogAlt": "Aperçu de la page Mes réclamations – MTR Industry"
+        },
         "title": "Mes réclamations",
         "subtitle": "Suivez vos réclamations et téléchargez leurs PDF.",
         "searchPlaceholder": "Rechercher (numéro, type, nature, attente, date…)",
@@ -498,7 +531,7 @@
       "loading": "Chargement…",
       "loadingQuotes": "Chargement des numéros…",
       "table": {
-         "type": "Type",
+        "type": "Type",
         "reference": "Référence",
         "designation": "Désignation",
         "priceHT": "Prix HT",
@@ -518,7 +551,7 @@
         "refExample": "Ex: ART-001",
         "designationExample": "Ex: Ressort compression Ø10",
         "priceExample": "Ex: 100.00",
-         "selectType": "— Select a type —"
+        "selectType": "— Select a type —"
       },
       "actions": {
         "edit": "Modifier",
@@ -624,6 +657,11 @@
     }
   },
   "profile": {
+    "seo": {
+      "title": "Mon compte – Espace client | MTR Industry",
+      "description": "Accédez à vos informations de compte, vos coordonnées et vos raccourcis (réclamations, support, mot de passe).",
+      "ogAlt": "Espace client MTR Industry"
+    },
     "userFallback": "Utilisateur",
     "lang": {
       "fr": "Français",

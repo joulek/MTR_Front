@@ -1,25 +1,47 @@
 // app/[locale]/client/layout.jsx
-"use client";
+import ClientLayoutShell from "./layout.client";
+import { getTranslations } from "next-intl/server";
 
-import SiteHeader from "@/components/SiteHeader"; // adapte le chemin si besoin
-import { useLocale } from "next-intl";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-export default function ClientLayout({ children }) {
-  const locale = useLocale();
+export async function generateMetadata({ params: { locale } }) {
+  const t = await getTranslations({ locale, namespace: "auth.client.layout.seo" });
+  const title = t("title", { default: "Espace client | MTR Industry" });
+  const description = t("description", { default: "Accédez à votre espace client MTR Industry." });
+  const url = `${APP_URL}/${locale}/client`;
+  const ogImage = `${APP_URL}/og/client.jpg`;
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", { method: "POST", credentials: "include" });
-    } finally {
-      // retour vers /[locale]/login
-      window.location.href = `/${locale}/login`;
-    }
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/client`,
+      languages: { fr: "/fr/client", en: "/en/client" },
+    },
+    openGraph: {
+      type: "website",
+      url,
+      title,
+      description,
+      siteName: "MTR Industry",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: t("ogAlt", { default: "Espace client MTR Industry" }) }],
+      locale,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+    // important : l'espace client ne doit pas être indexé
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: { index: false, follow: false, noimageindex: true },
+    },
   };
+}
 
-  return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <SiteHeader mode="client" onLogout={handleLogout} />
-      <main className="flex-1">{children}</main>
-    </div>
-  );
+export default function Layout({ children, params: { locale } }) {
+  return <ClientLayoutShell locale={locale}>{children}</ClientLayoutShell>;
 }
