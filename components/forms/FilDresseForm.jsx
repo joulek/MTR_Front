@@ -24,28 +24,77 @@ export default function FilDresseForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
+  /* ===================== Limite fichiers ===================== */
+  const MAX_FILES = 4;
+
+  function uniqueBySignature(arr = []) {
+    const seen = new Set();
+    const out = [];
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified || 0}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(f);
+      }
+    }
+    return out;
+  }
+
+  function syncInputFiles(inputRef, filesArr = []) {
+    if (!inputRef?.current) return;
+    const dt = new DataTransfer();
+    filesArr.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }
+
+  function handleFileList(list, { append = true } = {}) {
+    const incoming = Array.from(list || []);
+    if (incoming.length === 0) return;
+
+    const base = append ? (files || []) : [];
+    const merged = uniqueBySignature([...base, ...incoming]);
+
+    if (merged.length > MAX_FILES) {
+      const kept = merged.slice(0, MAX_FILES);
+      const ignoredCount = merged.length - kept.length;
+
+      setFiles(kept);
+      syncInputFiles(fileInputRef, kept);
+
+      setErr(t("limit")); // message traduit
+      console.warn("[Upload] Dépassement de la limite fichiers:", {
+        incoming: incoming.length,
+        existing: files.length,
+        kept: kept.length,
+        ignored: ignoredCount,
+        max: MAX_FILES,
+      });
+      return;
+    }
+
+    setFiles(merged);
+    syncInputFiles(fileInputRef, merged);
+  }
+  /* =========================================================== */
+
   // i18n/options (⚠️ valeurs canoniques attendues par le backend)
   const lengthUnitOptions = [
     { value: "mm", label: "mm" },
     { value: "m", label: "m" },
   ];
 
-  // ---- Select "Unit" : labels i18n + valeurs backend stables ----
   const unitLabels = t.raw("unitOptions") || ["pièces", "kg"];
   const qtyUnitOptions = [
     { value: "pieces", label: unitLabels[0] ?? "pièces" },
     { value: "kg", label: unitLabels[1] ?? "kg" },
   ];
 
-  // ---- Select "Material" : labels i18n + valeurs backend FR exactes ----
-  // Labels côté i18n (en.json: "materialChecks": ["Galvanized steel", ...])
   const matLabels = t.raw("materialChecks") || [
     "Acier galvanisé",
     "Acier Noir",
     "Acier ressort",
     "Acier inoxydable",
   ];
-  // Valeurs envoyées (en FR, attendues par le backend)
   const MAT_VALUES = [
     "Acier galvanisé",
     "Acier Noir",
@@ -53,8 +102,8 @@ export default function FilDresseForm() {
     "Acier inoxydable",
   ];
   const materialOptions = MAT_VALUES.map((value, i) => ({
-    value,                    // ← valeur backend
-    label: matLabels[i] ?? value, // ← label UI traduit
+    value,
+    label: matLabels[i] ?? value,
   }));
 
   const selectPlaceholder = t.has("selectPlaceholder")
@@ -69,29 +118,18 @@ export default function FilDresseForm() {
       .catch(() => setUser(null));
   }, []);
 
-  // scroll vers l’alerte
   useEffect(() => {
     if (alertRef.current && (loading || ok || err)) {
       alertRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [loading, ok, err]);
 
-  // auto-hide succès
   useEffect(() => {
     if (!ok) return;
     const id = setTimeout(() => setOk(""), 5000);
     return () => clearTimeout(id);
   }, [ok]);
 
-  function handleFileList(list) {
-    const arr = Array.from(list || []);
-    setFiles(arr);
-    if (fileInputRef.current) {
-      const dt = new DataTransfer();
-      arr.forEach((f) => dt.items.add(f));
-      fileInputRef.current.files = dt.files;
-    }
-  }
   function onDrop(e) {
     e.preventDefault();
     setIsDragging(false);
@@ -118,12 +156,11 @@ export default function FilDresseForm() {
     setLoading(true);
     try {
       const fd = new FormData(form);
-      fd.append("type", "filDresse"); // info côté back si besoin
+      fd.append("type", "filDresse");
 
       const userId = localStorage.getItem("id");
       if (userId) fd.append("user", userId);
 
-      // 🚀 envoi direct vers la route dédiée
       const res = await fetch("/api/devis/filDresse", {
         method: "POST",
         body: fd,
@@ -131,7 +168,7 @@ export default function FilDresseForm() {
       });
 
       let payload = null;
-      try { payload = await res.json(); } catch { }
+      try { payload = await res.json(); } catch {}
 
       if (res.ok) {
         finishedRef.current = true;
@@ -184,42 +221,17 @@ export default function FilDresseForm() {
         {/* Dimensions & choix */}
         <SectionTitle>{t("maindim")}</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {/* Valeurs conformes au backend */}
-          <Input name="longueurValeur" label={t.has("length") ? t("length") : "Longueur"} required type="number" min="0" />
-          <SelectKV
-            name="longueurUnite"
-            label={t.has("unitLong") ? t("unitLong") : "Unité de longueur"}
-            options={lengthUnitOptions}
-            placeholder={selectPlaceholder}
-            required
-          />
-
-          <Input name="diametre" label={t.has("diameter") ? t("diameter") : "Diamètre"} required type="number" min="0" />
-
-          <Input name="quantiteValeur" label={t.has("quantityWanted") ? t("quantityWanted") : "Quantité"} required type="number" min="1" />
-          <SelectKV
-            name="quantiteUnite"
-            label={t.has("unit") ? t("unit") : "Unité de quantité"}
-            options={qtyUnitOptions}
-            placeholder={selectPlaceholder}
-            required
-          />
-
-          <SelectKV
-            name="matiere"
-            label={t.has("material") ? t("material") : "Matière"}
-            options={materialOptions}
-            placeholder={selectPlaceholder}
-            required
-          />
+          <Input name="longueurValeur" label={t("length")} required type="number" min="0" />
+          <SelectKV name="longueurUnite" label={t("unitLong")} options={lengthUnitOptions} placeholder={selectPlaceholder} required />
+          <Input name="diametre" label={t("diameter")} required type="number" min="0" />
+          <Input name="quantiteValeur" label={t("quantityWanted")} required type="number" min="1" />
+          <SelectKV name="quantiteUnite" label={t("unit")} options={qtyUnitOptions} placeholder={selectPlaceholder} required />
+          <SelectKV name="matiere" label={t("material")} options={materialOptions} placeholder={selectPlaceholder} required />
         </div>
 
         {/* Fichiers */}
-        <SectionTitle className="mt-8">{t.has("docs") ? t("docs") : "Documents"}</SectionTitle>
-        <p className="text-sm text-gray-500 mb-3">
-          {t("acceptedTypes")}
-        </p>
-
+        <SectionTitle className="mt-8">{t("docs")}</SectionTitle>
+        <p className="text-sm text-gray-500 mb-3">{t("acceptedTypes")}</p>
         <label
           htmlFor="docs"
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -231,27 +243,18 @@ export default function FilDresseForm() {
         >
           {files.length === 0 ? (
             <div className="text-center">
-              <p className="text-base font-medium text-[#002147]">
-                {t("dropHere")}
-              </p>
-              <p className="text-sm text-gray-500 mb-3">
-                {t("4files")}
-              </p>
+              <p className="text-base font-medium text-[#002147]">{t("dropHere")}</p>
+              <p className="text-sm text-gray-500 mb-3">{t("4files")}</p>
             </div>
           ) : (
             <div className="w-full text-center">
               <p className="text-sm font-semibold text-[#002147] mb-2">
                 {files.length} fichier{files.length > 1 ? "s" : ""} sélectionné{files.length > 1 ? "s" : ""} :
               </p>
-              <p className="mx-auto max-w-[900px] truncate text-[15px] text-[#002147]">
-                {files.map((f) => f.name).join(", ")}
-              </p>
-              <p className="text-xs text-[#002147]/70 mt-1">
-                {(files.reduce((s, f) => s + f.size, 0) / 1024).toFixed(0)} Ko au total
-              </p>
+              <p className="mx-auto max-w-[900px] truncate text-[15px] text-[#002147]">{files.map((f) => f.name).join(", ")}</p>
+              <p className="text-xs text-[#002147]/70 mt-1">{(files.reduce((s, f) => s + f.size, 0) / 1024).toFixed(0)} Ko au total</p>
             </div>
           )}
-
           <input
             id="docs"
             ref={fileInputRef}
@@ -266,11 +269,11 @@ export default function FilDresseForm() {
 
         {/* Textes libres */}
         <div className="grid grid-cols-1 gap-4 md:gap-6 mt-6">
-          <TextArea name="exigences" label={t.has("specialReq") ? t("specialReq") : "Exigences particulières"} />
-          <TextArea name="remarques" label={t.has("otherRemarks") ? t("otherRemarks") : "Autres remarques"} />
+          <TextArea name="exigences" label={t("specialReq")} />
+          <TextArea name="remarques" label={t("otherRemarks")} />
         </div>
 
-        {/* Submit + alertes */}
+        {/* Submit */}
         <div className="mt-8">
           <button
             type="submit"
@@ -280,18 +283,11 @@ export default function FilDresseForm() {
                 ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-gradient-to-r from-[#002147] to-[#01346b] text-white shadow-lg hover:shadow-xl hover:translate-y-[-1px] active:translate-y-[0px]"}`}
           >
-            {loading
-              ? (t.has("sending") ? t("sending") : "Envoi en cours…")
-              : !user?.authenticated
-                ? (t.has("loginToSend") ? t("loginToSend") : "Connectez-vous pour envoyer")
-                : user?.role !== "client"
-                  ? (t.has("loginToSend") ? t("loginToSend") : "Réservé aux clients")
-                  : (t.has("sendRequest") ? t("sendRequest") : "Envoyer la demande")}
+            {loading ? t("sending") : t("sendRequest")}
           </button>
-
           <div ref={alertRef} aria-live="polite" className="mt-3">
             {loading ? (
-              <Alert type="info" message={t.has("sendingInfo") ? t("sendingInfo") : "Votre demande de devis est en cours d'envoi, veuillez patienter…"} />
+              <Alert type="info" message={t("sending")} />
             ) : err ? (
               <Alert type="error" message={err} />
             ) : ok ? (
@@ -304,7 +300,7 @@ export default function FilDresseForm() {
   );
 }
 
-/* === UI helpers (mêmes styles que Compression) === */
+/* === UI helpers === */
 function SectionTitle({ children, className = "" }) {
   return (
     <div className={`mb-3 mt-4 ${className}`}>
@@ -324,78 +320,38 @@ function Alert({ type = "info", message }) {
       : type === "success"
         ? "bg-green-50 text-green-700 border-green-200"
         : "bg-blue-50 text-blue-700 border-blue-200";
-  return (
-    <div className={`${base} ${styles}`}>
-      <span className="mt-0.5">•</span>
-      <span>{message}</span>
-    </div>
-  );
+  return <div className={`${base} ${styles}`}><span className="mt-0.5">•</span><span>{message}</span></div>;
 }
 function Input({ label, name, required, type = "text", min }) {
   return (
     <div className="space-y-1">
-      {label && (
-        <label className="block font-medium text-[#002147]">
-          {label}{required && <RequiredMark />}
-        </label>
-      )}
-      <input
-        name={name}
-        type={type}
-        min={min}
-        required={required}
-        className="w-full rounded-xl border border-gray-200 px-4 py-2.5
-                   text-[#002147] placeholder:text-gray-400
-                   focus:outline-none focus:ring-2 focus:ring-[#002147]/30 focus:border-[#002147]" />
+      <label className="block font-medium text-[#002147]">{label}{required && <RequiredMark />}</label>
+      <input name={name} type={type} min={min} required={required} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[#002147]" />
     </div>
   );
 }
 function SelectKV({ label, name, options = [], required, placeholder = "Sélectionnez…" }) {
   return (
     <div className="space-y-1 w-full">
-      {label && (
-        <label className="block font-medium text-[#002147]">
-          {label}{required && <RequiredMark />}
-        </label>
-      )}
+      <label className="block font-medium text-[#002147]">{label}{required && <RequiredMark />}</label>
       <select
         name={name}
         required={required}
-        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 bg-white
-                   text-[#002147] text-[15px] font-medium
-                   focus:outline-none focus:ring-2 focus:ring-[#002147]/30 focus:border-[#002147] pr-10"
-        style={{
-          appearance: "none",
-          WebkitAppearance: "none",
-          MozAppearance: "none",
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23002147' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E\")",
-          backgroundRepeat: "no-repeat",
-          backgroundPosition: "right 0.875rem center",
-          backgroundSize: "1rem 1rem",
-        }}
+        className="w-full rounded-xl border border-gray-200 px-4 py-2.5 bg-white text-[#002147] text-[15px] font-medium"
       >
         <option value="" style={{ color: "#64748b" }}>{placeholder}</option>
         {options.map((o) => (
-          <option key={o.value} value={o.value} style={{ color: "#002147" }}>
-            {o.label}
-          </option>
+          <option key={o.value} value={o.value} style={{ color: "#002147" }}>{o.label}</option>
         ))}
       </select>
     </div>
   );
 }
-
 function TextArea({ label, name }) {
   return (
     <div className="space-y-1">
       <label className="block font-medium text-[#002147]">{label}</label>
-      <textarea
-        name={name}
-        rows={4}
-        className="w-full rounded-xl border border-gray-200 px-4 py-2.5
-                   text-[#002147] placeholder:text-gray-400
-                   focus:outline-none focus:ring-2 focus:ring-[#002147]/30 focus:border-[#002147]" />
+      <textarea name={name} rows={4} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-[#002147]" />
     </div>
   );
 }

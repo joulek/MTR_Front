@@ -35,6 +35,11 @@
     "noAccount": "Pas de compte ?",
     "goRegister": "S'inscrire",
     "loginBtn": "Se connecter",
+    "changePasswordTitle": "Modifier mon mot de passe",
+    "changePasswordHint": "Saisissez votre mot de passe actuel puis le nouveau.",
+    "currentPassword": "Mot de passe actuel",
+    "confirmChange": "Confirmer",
+    "passwordChanged": "Mot de passe modifié.",
     "placeholders": {
       "lastName": "Dupont",
       "firstName": "Jean",
@@ -52,7 +57,8 @@
       "network": "Erreur réseau, veuillez réessayer.",
       "loginFailed": "Identifiants incorrects.",
       "accountTypeRequired": "Veuillez choisir le type de compte.",
-      "noAccountForEmail": "Aucun compte n'est associé à cet email."
+      "noAccountForEmail": "Aucun compte n'est associé à cet email.",
+      "changePassword": "Échec de la modification du mot de passe."
     },
     "messages": {
       "registerSuccess": "Compte créé avec succès !",
@@ -109,6 +115,11 @@
       "quoteRequest": "Demander un devis",
       "logout": "Se déconnecter",
       "quotesPage": {
+        "seo": {
+          "title": "Mes devis – Espace client | MTR Industry",
+          "description": "Consultez vos demandes de devis, ouvrez les PDF et confirmez vos commandes dans votre espace client.",
+          "ogAlt": "Aperçu de la page Mes devis – MTR Industry"
+        },
         "title": "Mes demandes de devis",
         "subtitle": "Toutes vos demandes envoyées, triées du plus récent au plus ancien.",
         "searchPlaceholder": "Rechercher par n° de devis, type…",
@@ -154,6 +165,11 @@
     "devis": {
       "title": "Formulaire de Spécifications Techniques",
       "subtitle": "Choisissez un type de produit pour afficher le formulaire correspondant.",
+      "seo": {
+        "title": "Demander un devis – Ressorts compression, traction, torsion | MTR Industry",
+        "description": "Obtenez un devis rapide pour vos ressorts de compression, traction, torsion, fils dressés et grilles métalliques. Service sur mesure pour l’industrie.",
+        "ogAlt": "Demande de devis MTR Industry"
+      },
       "types": {
         "compression": " Ressort de Compression",
         "traction": " Ressort de Traction",
@@ -644,7 +660,9 @@
       "help": "Aide & support",
       "helpHint": "FAQ, contact",
       "security": "Sécurité",
-      "securityHint": "Info compte en lecture seule"
+      "securityHint": "Info compte en lecture seule",
+      "changePassword": "Changer le mot de passe",
+      "changePasswordHint": "Mettre à jour votre mot de passe"
     },
     "settings": {
       "title": "Paramètres de l’application",

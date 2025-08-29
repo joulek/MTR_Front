@@ -43,6 +43,11 @@
     "noAccount": "No account?",
     "goRegister": "Register",
     "loginBtn": "Sign in",
+    "changePasswordTitle": "Change my password",
+    "changePasswordHint": "Enter your current password, then your new password.",
+    "currentPassword": "Current password",
+    "confirmChange": "Confirm",
+    "passwordChanged": "Password updated.",
     "placeholders": {
       "lastName": "Smith",
       "firstName": "John",
@@ -60,7 +65,8 @@
       "network": "Network error, please try again.",
       "loginFailed": "Incorrect credentials.",
       "accountTypeRequired": "Please choose an account type.",
-      "noAccountForEmail": "No account is associated with this email."
+      "noAccountForEmail": "No account is associated with this email.",
+      "changePassword": "Unable to change the password."
     },
     "messages": {
       "registerSuccess": "Account created successfully!",
@@ -116,6 +122,11 @@
       },
       "quoteRequest": "Request a Quote",
       "quotesPage": {
+        "seo": {
+          "title": "My quotes – Client area | MTR Industry",
+          "description": "View your quote requests, open PDFs, and confirm your orders in your client area.",
+          "ogAlt": "Preview of the My quotes page – MTR Industry"
+        },
         "title": "My Quote Requests",
         "subtitle": "All requests you have submitted, newest first.",
         "searchPlaceholder": "Search by quote no., type…",
@@ -141,7 +152,7 @@
       "articles": "Articles",
       "categories": "Categories",
       "products": "Products",
-      "quotesList":"Quotes List",
+      "quotesList": "Quotes List",
       "users": "Users",
       "logout": "Log out",
       "welcomeDashboard": "Welcome to the Admin Dashboard",
@@ -161,6 +172,11 @@
     "devis": {
       "title": "Technical Specifications Form",
       "subtitle": "Choose a product type to display the corresponding form.",
+      "seo": {
+        "title": "Request a Quote – Compression, Extension & Torsion Springs | MTR Industry",
+        "description": "Get a fast quote for compression, extension, torsion springs, straightened wire and wire mesh. Custom service for industry.",
+        "ogAlt": "MTR Industry quote request"
+      },
       "types": {
         "compression": " Compression Spring",
         "traction": " Extension Spring",
@@ -649,7 +665,9 @@
       "help": "Help",
       "helpHint": "FAQ, contact",
       "security": "Security",
-      "securityHint": "Read-only account info"
+      "securityHint": "Read-only account info",
+      "changePassword": "Change password",
+      "changePasswordHint": "Update your password"
     },
     "settings": {
       "title": "App settings",

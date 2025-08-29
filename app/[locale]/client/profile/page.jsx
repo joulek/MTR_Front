@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Home, MessageSquareWarning, HelpCircle } from "lucide-react";
+import { Home, MessageSquareWarning, HelpCircle, KeyRound } from "lucide-react"; // ⬅️ ajout KeyRound
 
 const NAVY = "#0B1E3A";
 const YELLOW = "#F7C600";
@@ -91,11 +91,9 @@ export default function ClientProfileReadOnly() {
 
   return (
     <div className="min-h-screen bg-white px-4 py-8">
-      {/* Grille : 3 colonnes sur desktop → Mon compte (2 cols) + Raccourcis (1 col) */}
       <div className="mx-auto w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* MON COMPTE (col-span-2) */}
+        {/* MON COMPTE */}
         <Section title={t("account.title")} className="lg:col-span-2">
-          {/* Bandeau identité */}
           <div className="flex items-center gap-4">
             <div
               className="grid place-items-center rounded-xl"
@@ -119,7 +117,7 @@ export default function ClientProfileReadOnly() {
             </div>
           </div>
 
-          {/* Infos communes */}
+          {/* Infos */}
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InfoItem label={t("account.fields.lastName")} value={me.nom} />
             <InfoItem label={t("account.fields.firstName")} value={me.prenom} />
@@ -129,7 +127,6 @@ export default function ClientProfileReadOnly() {
             <InfoItem label={t("account.fields.loginEmail")} value={me.email} />
           </div>
 
-          {/* Infos dynamiques */}
           {me.accountType === "personnel" && (
             <div className="mt-6">
               <h3 className="font-bold text-gray-700 mb-3">{t("account.personalInfo")}</h3>
@@ -148,7 +145,7 @@ export default function ClientProfileReadOnly() {
           )}
         </Section>
 
-        {/* RACCOURCIS (à côté de Mon compte) */}
+        {/* RACCOURCIS */}
         <Section title={t("shortcuts.title")} className="lg:col-span-1">
           <div className="grid grid-cols-1 gap-3">
             <Row
@@ -157,7 +154,6 @@ export default function ClientProfileReadOnly() {
               hint={t("shortcuts.homeHint")}
               onClick={() => router.push(`/${locale}/`)}
             />
-            {/* ⬇️ Mes réclamations remplace Mes commandes */}
             <Row
               icon={<MessageSquareWarning className="w-5 h-5 text-[#FDC500]" />}
               label={t("shortcuts.claims", { defaultMessage: "Mes réclamations" })}
@@ -170,10 +166,17 @@ export default function ClientProfileReadOnly() {
               hint={t("shortcuts.helpHint")}
               onClick={() => router.push(`/${locale}/support`)}
             />
+            {/* Nouveau raccourci pour changer le mot de passe */}
+            <Row
+              icon={<KeyRound className="w-5 h-5 text-[#FDC500]" />}
+              label={t("shortcuts.changePassword", { defaultMessage: "Changer mon mot de passe" })}
+              hint={t("shortcuts.changePasswordHint", { defaultMessage: "Mettre à jour votre mot de passe" })}
+              onClick={() => router.push(`/${locale}/change-password`)}
+            />
           </div>
         </Section>
 
-        {/* À PROPOS (ligne suivante, pleine largeur) */}
+        {/* À PROPOS */}
         <Section title={t("about.title")} className="lg:col-span-3">
           <div className="text-sm text-gray-600">{t("about.text")}</div>
         </Section>

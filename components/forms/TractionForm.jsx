@@ -32,6 +32,62 @@ export default function TractionForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
+  // ========= Limite max fichiers (même logique que CompressionForm) =========
+  const MAX_FILES = 4;
+
+  function uniqueBySignature(arr = []) {
+    const seen = new Set();
+    const out = [];
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified || 0}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(f);
+      }
+    }
+    return out;
+  }
+
+  function syncInputFiles(inputRef, filesArr = []) {
+    if (!inputRef?.current) return;
+    const dt = new DataTransfer();
+    filesArr.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }
+
+  function handleFileList(list, { append = true } = {}) {
+    const incoming = Array.from(list || []);
+    if (incoming.length === 0) return;
+
+    // fusion avec l'existant (ou remplacement si append=false)
+    const base = append ? (files || []) : [];
+    const merged = uniqueBySignature([...base, ...incoming]);
+
+    if (merged.length > MAX_FILES) {
+      const kept = merged.slice(0, MAX_FILES);
+      const ignoredCount = merged.length - kept.length;
+
+      setFiles(kept);
+      syncInputFiles(fileInputRef, kept);
+
+      // 🔔 message unique via i18n (doit exister dans les traductions: "limit")
+      setErr(t("limit"));
+
+      console.warn("[Upload] Dépassement de la limite de fichiers:", {
+        incoming: incoming.length,
+        existing: files.length,
+        kept: kept.length,
+        ignored: ignoredCount,
+        max: MAX_FILES,
+      });
+      return;
+    }
+
+    setFiles(merged);
+    syncInputFiles(fileInputRef, merged);
+  }
+  // ========================================================================
+
   // Options i18n (labels UI seulement — on ne touche pas)
   const matOptions = t.raw("materialOptions") || [];
   const windOptions = t.raw("windingOptions") || [];
@@ -59,17 +115,6 @@ export default function TractionForm() {
     const id = setTimeout(() => setOk(""), 5000);
     return () => clearTimeout(id);
   }, [ok]);
-
-  function handleFileList(list) {
-    const arr = Array.from(list || []);
-    setFiles(arr);
-
-    if (fileInputRef.current) {
-      const dt = new DataTransfer();
-      arr.forEach((f) => dt.items.add(f));
-      fileInputRef.current.files = dt.files;
-    }
-  }
 
   function onDrop(e) {
     e.preventDefault();

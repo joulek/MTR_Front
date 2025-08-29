@@ -1,4 +1,3 @@
-// components/forms/GrilleMetalliqueForm.jsx
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
@@ -6,7 +5,7 @@ import Image from "next/image";
 import grilleImg from "@/public/devis/grille.png";
 
 /* --- petite étoile rouge pour champs requis --- */
-const RequiredMark = () => <span className="text-red-500" aria-hidden="true"> *</span>;
+const RequiredMark = () => <span className="text-red-500" aria-hidden> *</span>;
 
 export default function GrilleMetalliqueForm() {
   const t = useTranslations("auth.grilleForm");
@@ -25,7 +24,63 @@ export default function GrilleMetalliqueForm() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // i18n options (protégées : pas d'appel t.raw si la clé manque)
+  // ========= Limite max fichiers =========
+  const MAX_FILES = 4;
+  function uniqueBySignature(arr = []) {
+    const seen = new Set();
+    const out = [];
+    for (const f of arr) {
+      const sig = `${f.name}|${f.size}|${f.lastModified || 0}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(f);
+      }
+    }
+    return out;
+  }
+  function syncInputFiles(inputRef, filesArr = []) {
+    if (!inputRef?.current) return;
+    const dt = new DataTransfer();
+    filesArr.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }
+  function handleFileList(list, { append = true } = {}) {
+    const incoming = Array.from(list || []);
+    if (incoming.length === 0) return;
+
+    const base = append ? (files || []) : [];
+    const merged = uniqueBySignature([...base, ...incoming]);
+
+    if (merged.length > MAX_FILES) {
+      const kept = merged.slice(0, MAX_FILES);
+      const ignoredCount = merged.length - kept.length;
+
+      setFiles(kept);
+      syncInputFiles(fileInputRef, kept);
+
+      // 🔔 message i18n
+      setErr(t("limit"));
+
+      console.warn("[Upload] Dépassement de la limite de fichiers:", {
+        incoming: incoming.length,
+        existing: files.length,
+        kept: kept.length,
+        ignored: ignoredCount,
+        max: MAX_FILES,
+      });
+      return;
+    }
+
+    setFiles(merged);
+    syncInputFiles(fileInputRef, merged);
+  }
+  function onDrop(e) {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer?.files?.length) handleFileList(e.dataTransfer.files);
+  }
+
+  // i18n options
   const materialOptions = t.has("materialChecks")
     ? t.raw("materialChecks")
     : (locale === "en"
@@ -40,7 +95,7 @@ export default function GrilleMetalliqueForm() {
 
   const selectPlaceholder = t.has("selectPlaceholder") ? t("selectPlaceholder") : "Sélectionnez…";
 
-  // --- Normaliser EN -> FR au moment de l’envoi (aucun impact UI) ---
+  // --- Normaliser EN -> FR ---
   const FR_MAT = ["Acier galvanisé", "Acier Noir", "Inox"];
   const EN_TO_FR_MAT = [
     { fr: "Acier galvanisé", en: ["Galvanized steel", "Galvanized steel wire", "Galvanised steel", "Galvanised steel wire", "Galvanization steel"] },
@@ -48,7 +103,6 @@ export default function GrilleMetalliqueForm() {
     { fr: "Inox",            en: ["Stainless steel", "Stainless steel wire", "Inox", "Stainless"] },
   ];
 
-  // ⚠️ Ici on fixe la liste FR canonique attendue par le backend (ne surtout pas la lier à finishOptions)
   const FR_FIN = ["Peinture", "Chromage", "Galvanisation", "Autre"];
   const EN_TO_FR_FIN = [
     { fr: "Peinture",      en: ["Painting", "Painted", "Paint", "Coating", "Paint coat"] },
@@ -60,7 +114,6 @@ export default function GrilleMetalliqueForm() {
   function normalizeOne(fd, name, frList, groups) {
     const v = fd.get(name);
     if (!v) return;
-    // déjà FR exact → rien à faire
     if (frList.includes(v)) return;
     const low = String(v).toLowerCase().trim();
     for (const { fr, en } of groups) {
@@ -70,7 +123,6 @@ export default function GrilleMetalliqueForm() {
       }
     }
   }
-  // -------------------------------------------------------------------------------
 
   // Récup session
   useEffect(() => {
@@ -93,21 +145,6 @@ export default function GrilleMetalliqueForm() {
     const id = setTimeout(() => setOk(""), 5000);
     return () => clearTimeout(id);
   }, [ok]);
-
-  function handleFileList(list) {
-    const arr = Array.from(list || []);
-    setFiles(arr);
-    if (fileInputRef.current) {
-      const dt = new DataTransfer();
-      arr.forEach(f => dt.items.add(f));
-      fileInputRef.current.files = dt.files;
-    }
-  }
-  function onDrop(e) {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer?.files?.length) handleFileList(e.dataTransfer.files);
-  }
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -134,8 +171,7 @@ export default function GrilleMetalliqueForm() {
       const userId = localStorage.getItem("id");
       if (userId) fd.append("user", userId);
 
-      // ✅ Normalisation (si l’utilisateur est en EN)
-      normalizeOne(fd, "matiere",  FR_MAT, EN_TO_FR_MAT);
+      normalizeOne(fd, "matiere", FR_MAT, EN_TO_FR_MAT);
       normalizeOne(fd, "finition", FR_FIN, EN_TO_FR_FIN);
 
       const res = await fetch("/api/devis/grille", {
@@ -145,7 +181,7 @@ export default function GrilleMetalliqueForm() {
       });
 
       let payload = null;
-      try { payload = await res.json(); } catch { }
+      try { payload = await res.json(); } catch {}
 
       if (res.ok) {
         finishedRef.current = true;
@@ -314,7 +350,7 @@ export default function GrilleMetalliqueForm() {
   );
 }
 
-/* === UI helpers (identiques à TorsionForm) === */
+/* === UI helpers === */
 function SectionTitle({ children, className = "" }) {
   return (
     <div className={`mb-3 mt-4 ${className}`}>
@@ -393,7 +429,6 @@ function SelectBase({ label, name, options = [], required, placeholder = "Sélec
     </div>
   );
 }
-
 function TextArea({ label, name }) {
   return (
     <div className="space-y-1">

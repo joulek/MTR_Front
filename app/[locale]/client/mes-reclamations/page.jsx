@@ -1,281 +1,99 @@
-// app/mes-reclamations/page.jsx  (ou pages/mes-reclamations.jsx)
-"use client";
+import MesReclamationsClient from "./MesReclamationsClient";
+import { getTranslations } from "next-intl/server";
+import Script from "next/script";
 
-import { useEffect, useMemo, useState, useCallback } from "react";
-// import Link from "next/link"; // (inutile ici, retiré)
-import { useLocale, useTranslations } from "next-intl";
-import { FiSearch, FiXCircle, FiFileText } from "react-icons/fi";
-import Pagination from "@/components/Pagination";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+export async function generateMetadata({ params: { locale } }) {
+  const t = await getTranslations({ locale, namespace: "auth.client.claimsPage.seo" });
 
-/* -------------------- helpers -------------------- */
-function getCookie(name) {
-  if (typeof document === "undefined") return "";
-  const v = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
-  return v ? decodeURIComponent(v.split("=")[1]) : "";
+  // Titre + description
+  const title = t("title", { default: "Mes réclamations – Espace client | MTR Industry" });
+  const description = t("description", {
+    default: "Consultez, filtrez et téléchargez vos réclamations client (PDF, détails, statut).",
+  });
+
+  // URL localisée + image OG
+  const url = `${APP_URL}/${locale}/client/mes-reclamations`;
+  const images = [
+    {
+      url: `${APP_URL}/og/mes-reclamations.jpg`, // 👉 ajoute cette image dans /public/og/
+      width: 1200,
+      height: 630,
+      alt: t("ogAlt", { default: "Aperçu de la page Mes réclamations – MTR Industry" }),
+    },
+  ];
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/client/mes-reclamations`,
+      languages: {
+        fr: "/fr/client/mes-reclamations",
+        en: "/en/client/mes-reclamations",
+      },
+    },
+    openGraph: {
+      type: "website",
+      url,
+      title,
+      description,
+      siteName: "MTR Industry",
+      images,
+      locale,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: images.map(i => i.url),
+    },
+    // 🔒 Page d'espace client (contenu authentifié) → noindex recommandé
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+      noimageindex: true,
+    },
+  };
 }
 
-const STATUS_COLORS = {
-  open: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  processing: "bg-blue-100 text-blue-800 border-blue-300",
-  resolved: "bg-green-100 text-green-800 border-green-300",
-  rejected: "bg-red-100 text-red-800 border-red-300",
-};
-/* ------------------------------------------------- */
+export default async function Page({ params: { locale } }) {
+  const t = await getTranslations({ locale, namespace: "auth.client.claimsPage" });
 
-export default function MesReclamationsPage() {
-  const t = useTranslations("auth.client.claimsPage");
-  const locale = useLocale();
-
-  const [allItems, setAllItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [q, setQ] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const NOT_YET = t("notYet");
-
-  /* --------- fetch --------- */
-  const fetchAll = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const token =
-        getCookie("token") ||
-        (typeof localStorage !== "undefined" &&
-          (localStorage.getItem("token") || localStorage.getItem("authToken"))) ||
-        "";
-
-      const headers = {};
-      if (token) headers.Authorization = `Bearer ${token}`;
-
-      const res = await fetch(`${BACKEND}/api/reclamations/me`, {
-        credentials: "include",
-        headers,
-      });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(data?.message || "Fetch error");
-
-      // Assure-toi côté API de NE PAS renvoyer demandePdf.data (buffer)
-      setAllItems(data.items || []);
-    } catch (e) {
-      setError(e.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
-
-  /* --------- helpers UI --------- */
-  const prettyDateTime = (iso) => {
-    try {
-      const d = new Date(iso);
-      return d.toLocaleString(locale || "fr-FR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return iso || "-";
-    }
+  // JSON-LD Breadcrumb (facultatif si noindex, mais propre et cohérent)
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: locale === "fr" ? "Accueil" : "Home", item: `${APP_URL}/${locale}` },
+      { "@type": "ListItem", position: 2, name: locale === "fr" ? "Espace client" : "Client area", item: `${APP_URL}/${locale}/client` },
+      { "@type": "ListItem", position: 3, name: locale === "fr" ? "Mes réclamations" : "My claims", item: `${APP_URL}/${locale}/client/mes-reclamations` },
+    ],
   };
 
-  const openUrlInNewTab = async (url) => {
-    try {
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) {
-        setError(t("errors.fileNotFound"));
-        return;
-      }
-      const blob = await res.blob();
-      const obj = URL.createObjectURL(blob);
-      window.open(obj, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(obj), 60000);
-    } catch {
-      setError(t("errors.cannotOpen"));
-    }
+  // JSON-LD WebPage
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: t("seoTitle", { default: "Mes réclamations – Espace client" }),
+    description: t("seoDescription", {
+      default: "Espace personnel pour consulter vos réclamations et ouvrir les PDF associés.",
+    }),
+    primaryImageOfPage: `${APP_URL}/og/mes-reclamations.jpg`,
+    breadcrumb,
   };
 
-  const openPdf = (id) => {
-    const url = `${BACKEND}/api/reclamations/${id}/pdf`;
-    openUrlInNewTab(url);
-  };
-
-  const norm = (s) =>
-    (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-  /* --------- filtre --------- */
-  const filtered = useMemo(() => {
-    const nq = norm(q);
-    if (!nq) return allItems;
-
-    return allItems.filter((it) => {
-      const number = `${it?.commande?.numero || ""}`;
-      const type = `${it?.commande?.typeDoc || ""}`;
-      const nature = `${it?.nature || ""}`;
-      const attente = `${it?.attente || ""}`;
-      const dateText = prettyDateTime(it?.createdAt);
-      const haystack = norm([number, type, nature, attente, dateText].join(" "));
-      return haystack.includes(nq);
-    });
-  }, [allItems, q]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [q]);
-
-  /* --------- pagination --------- */
-  const total = filtered.length;
-  const pageStart = (page - 1) * pageSize;
-  const pageItems = filtered.slice(pageStart, pageStart + pageSize);
-
-  /* --------- render --------- */
   return (
-    <div className="mx-auto w-full max-w-6xl px-3 sm:px-6 py-6 space-y-6 sm:space-y-8">
-      <header className="text-center space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B1E3A]">
-          {t("title")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
-        {error && <p className="mt-1 text-sm text-rose-600">{error}</p>}
-      </header>
-
-      {/* recherche */}
-      <div className="w-full mt-1">
-        <div className="relative mx-auto w-full max-w-2xl">
-          <FiSearch
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="w-full rounded-xl border border-gray-300 bg-white px-9 pr-9 py-2 text-sm text-[#0B1E3A] shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
-          />
-          {q && (
-            <button
-              type="button"
-              onClick={() => setQ("")}
-              aria-label={t("clear")}
-              title={t("clear")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-6 w-6 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
-            >
-              <FiXCircle size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* desktop table */}
-      <div className="rounded-2xl border border-[#F7C60022] bg-white shadow-[0_6px_22px_rgba(0,0,0,.06)]">
-        {loading ? (
-          <p className="px-6 py-6 text-slate-500">{t("loading")}</p>
-        ) : error ? (
-          <p className="px-6 py-6 text-rose-600">{error}</p>
-        ) : pageItems.length === 0 ? (
-          <p className="px-6 py-6 text-slate-500">{t("noData")}</p>
-        ) : (
-          <>
-            <table className="w-full table-auto">
-              <thead>
-                <tr className="bg-white">
-                  <th className="p-3 text-left">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t("table.document")}
-                    </div>
-                  </th>
-                  <th className="p-3 text-left">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t("table.nature")}
-                    </div>
-                  </th>
-                  <th className="p-3 text-left">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t("table.attente")}
-                    </div>
-                  </th>
-                  <th className="p-3 text-left">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t("table.createdAt")}
-                    </div>
-                  </th>
-                  <th className="p-3 text-left">
-                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                      {t("table.pdf")}
-                    </div>
-                  </th>
-                </tr>
-                <tr>
-                  <td colSpan={7}>
-                    <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-                  </td>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {pageItems.map((it) => {
-                  const typeDoc = (it?.commande?.typeDoc || "-").toUpperCase();
-                  const numero = it?.commande?.numero || "—";
-                  const hasPdf = !!it?.demandePdf?.generatedAt; // expose ceci côté API
-
-                  return (
-                    <tr key={it._id} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
-                      <td className="p-3 align-top">
-                        <span className="inline-flex items-center gap-2 text-[#0B1E3A] font-medium">
-                          <span className="h-2 w-2 rounded-full bg-[#F7C600] shrink-0" />
-                          <span>{typeDoc}</span>
-                        </span>
-                        <div className="text-slate-600">{numero}</div>
-                      </td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{it?.nature || "-"}</td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{it?.attente || "-"}</td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{prettyDateTime(it?.createdAt)}</td>
-
-                      <td className="p-3 align-top">
-                        {hasPdf ? (
-                          <button
-                            type="button"
-                            onClick={() => openPdf(it._id)}
-                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-xs hover:bg-slate-50 text-[#0B1E3A]"
-                            title={t("aria.openPdf")}
-                          >
-                            <FiFileText /> {t("actions.open")}
-                          </button>
-                        ) : (
-                          <span className="text-slate-500">{NOT_YET}</span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            <div className="px-4 pb-5">
-              <Pagination
-                page={page}
-                pageSize={pageSize}
-                total={total}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
-                pageSizeOptions={[5, 10, 20, 50]}
-              />
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Mobile: tu peux ajouter un rendu cartes si besoin */}
-    </div>
+    <>
+      <Script
+        id="ldjson-claims"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <MesReclamationsClient />
+    </>
   );
 }

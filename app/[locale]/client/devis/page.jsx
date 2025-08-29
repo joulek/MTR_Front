@@ -1,109 +1,98 @@
-"use client";
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import Image from "next/image";
+// app/[locale]/devis/page.jsx
+import DevisClient from "./DevisClient";
+import { getTranslations } from "next-intl/server";
+import Script from "next/script";
 
-import CompressionForm from "@/components/forms/CompressionForm";
-import TractionForm from "@/components/forms/TractionForm";
-import TorsionForm from "@/components/forms/TorsionForm";
-import FilDresseForm from "@/components/forms/FilDresseForm";
-import GrilleMetalliqueForm from "@/components/forms/GrilleMetalliqueForm";
-import AutreArticleForm from "@/components/forms/AutreArticleForm";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-import compressionImg from "@/public/devis/compression_logo.png";
-import tractionImg from "@/public/devis/ressort_traction_1.jpg";
-import torsionImg from "@/public/devis/torsion_ressorts.png";
-import fillImg from "@/public/devis/dresser.png";
-import grillImg from "@/public/devis/grille.png";
-import autreImg from "@/public/devis/autre.jpg";
+export async function generateMetadata({ params: { locale } }) {
+  const t = await getTranslations({ locale, namespace: "auth.devis" });
 
+  // Titres & descriptions
+  const title = t("seo.title", { default: "Demander un devis – Ressorts compression, traction, torsion | MTR Industry" });
+  const description = t("seo.description", {
+    default:
+      "Obtenez un devis rapide pour vos ressorts de compression, traction, torsion, fils dressés et grilles métalliques. Service sur mesure pour l’industrie.",
+  });
 
-
-
-export default function DevisPage() {
-  const [type, setType] = useState("compression");
-  const t = useTranslations("auth.devis");
-
-  const TYPES = [
-    { key: "compression", label: t("types.compression") || "", img: compressionImg },
-    { key: "traction", label: t("types.traction") || "", img: tractionImg },
-    { key: "torsion", label: t("types.torsion") || "", img: torsionImg },
-    { key: "fil", label: t("types.fil") || "", img: fillImg },
-    { key: "grille", label: t("types.grille") || "", img: grillImg },
-    { key: "autre", label: t("types.autre") || "",  img: autreImg },
+  const url = `${APP_URL}/${locale}/devis`;
+  const images = [
+    {
+      url: `${APP_URL}/og/devis.jpg`, // mets une image OG réelle si possible
+      width: 1200,
+      height: 630,
+      alt: t("seo.ogAlt", { default: "Demande de devis MTR Industry" }),
+    },
   ];
 
-  const renderForm = () => {
-    switch (type) {
-      case "compression": return <CompressionForm />;
-      case "traction": return <TractionForm />;
-      case "torsion": return <TorsionForm />;
-      case "fil": return <FilDresseForm />;
-      case "grille": return <GrilleMetalliqueForm />;
-      case "autre": return <AutreArticleForm />;
-      default: return null;
-    }
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/${locale}/devis`,
+      languages: {
+        fr: "/fr/devis",
+        en: "/en/devis",
+      },
+    },
+    keywords: [
+      "devis ressort",
+      "ressort compression",
+      "ressort traction",
+      "ressort torsion",
+      "fil dressé",
+      "grille métallique",
+      "MTR Industry",
+    ],
+    openGraph: {
+      type: "website",
+      url,
+      title,
+      description,
+      siteName: "MTR Industry",
+      images,
+      locale,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: images.map((i) => i.url),
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
+
+export default async function Page() {
+  // JSON-LD (schema.org) : Service + WebPage
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "Demander un devis – MTR Industry",
+    description:
+      "Obtenez un devis rapide pour vos ressorts de compression, traction, torsion, fils dressés et grilles métalliques.",
+    primaryImageOfPage: `${APP_URL}/og/devis.jpg`,
+    breadcrumb: {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: `${APP_URL}` },
+        { "@type": "ListItem", position: 2, name: "Demander un devis", item: `${APP_URL}/devis` },
+      ],
+    },
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#002147] text-center">{t("title")}</h1>
-        <p className="text-gray-600 mt-1 text-center">{t("subtitle")}</p>
-
-        {/* Liste des types */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {TYPES.map(({ key, label, Icon, img }) => {
-            const active = type === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setType(key)}
-                className={[
-                  "rounded-xl border p-4 text-left transition group h-full",
-                  active ? "border-[#ffb400] bg-[#fff7e6] shadow"
-                         : "border-gray-200 bg-white hover:border-[#ffb400]/60 hover:shadow-md"
-                ].join(" ")}
-              >
-                <div className="flex items-center gap-3 h-full">
-                  {/* Image si présente, sinon icône */}
-                  {img ? (
-                    <div className={`relative w-10 h-10 overflow-hidden rounded-lg ring-1 ${active ? "ring-[#ffb400]" : "ring-gray-200"}`}>
-                      <Image
-                        src={img}
-                        alt={label}
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                        priority={false}
-                      />
-                    </div>
-                  ) : (
-                    <span
-                      className={[
-                        "inline-flex items-center justify-center rounded-lg p-2",
-                        active ? "bg-[#ffb400]/15 text-[#b36b00]" : "bg-gray-100 text-gray-700"
-                      ].join(" ")}
-                      aria-hidden
-                    >
-                      {Icon ? <Icon className="w-5 h-5" /> : null}
-                    </span>
-                  )}
-
-                  <div className="flex items-center">
-                    <div className="font-semibold text-[#002147]">{label}</div>
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Formulaire affiché */}
-        <div className="mt-8 bg-white rounded-2xl shadow p-6">
-          {renderForm()}
-        </div>
-      </div>
-    </div>
+    <>
+      <Script
+        id="ldjson-devis"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <DevisClient />
+    </>
   );
 }
