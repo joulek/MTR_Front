@@ -498,6 +498,7 @@
       "loading": "Chargement…",
       "loadingQuotes": "Chargement des numéros…",
       "table": {
+         "type": "Type",
         "reference": "Référence",
         "designation": "Désignation",
         "priceHT": "Prix HT",
@@ -506,16 +507,18 @@
         "actions": "Actions"
       },
       "labels": {
+        "type": "Type",
         "reference": "Référence",
         "designation": "Désignation",
         "priceHT": "Prix HT",
         "quoteNumber": "N° Devis"
       },
       "placeholders": {
+        "type": "-- Sélectionner le type --",
         "refExample": "Ex: ART-001",
         "designationExample": "Ex: Ressort compression Ø10",
         "priceExample": "Ex: 100.00",
-        "select": "-- Sélectionner --"
+         "selectType": "— Select a type —"
       },
       "actions": {
         "edit": "Modifier",

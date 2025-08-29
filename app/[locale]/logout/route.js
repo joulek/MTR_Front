@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 
 // (optionnel) exécution edge = latence plus faible
-export const runtime = "edge";
+export const runtime = "nodejs";
 // (optionnel) jamais mis en cache
 export const dynamic = "force-dynamic";
 

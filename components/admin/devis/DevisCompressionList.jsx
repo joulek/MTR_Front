@@ -293,7 +293,7 @@ export default function DevisCompressionList() {
                         <div className="mt-2 h-px w-full bg-gray-200" />
                       </th>
 
-                      {[t("columns.number"), t("columns.client"), t("columns.date"), t("columns.pdf"), t("columns.attachments"), "Devis"].map((h) => (
+                      {[t("columns.number"), t("columns.client"), t("columns.date"), t("columns.pdf"), t("columns.attachments")].map((h) => (
                         <th key={h} className="p-2.5 text-left align-bottom">
                           <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-600">{h}</div>
                           <div className="mt-2 h-px w-full bg-gray-200" />
@@ -308,7 +308,6 @@ export default function DevisCompressionList() {
                       const docs = (d?.documents || [])
                         .map((doc, i) => ({ ...doc, index: doc.index ?? i, filename: cleanFilename(doc.filename) }))
                         .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
-                      const devisInfo = devisMap[d._id];
 
                       return (
                         <tr key={d._id} className="odd:bg-slate-50/40 hover:bg-[#0B1E3A]/[0.04] transition-colors">
@@ -382,20 +381,6 @@ export default function DevisCompressionList() {
                           </td>
 
                           {/* Devis */}
-                          <td className="p-2.5 align-top border-b border-gray-200 whitespace-nowrap">
-                            {devisInfo?.pdf ? (
-                              <a
-                                href={devisInfo.pdf}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-3 py-1 text-[12px] hover:bg-[#0B1E3A]/5"
-                              >
-                                Ouvrir devis
-                              </a>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </td>
                         </tr>
                       );
                     })}
@@ -432,7 +417,7 @@ export default function DevisCompressionList() {
                 const docs = (d?.documents || [])
                   .map((doc, idx) => ({ ...doc, index: doc.index ?? idx, filename: cleanFilename(doc.filename) }))
                   .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
-                const devisInfo = devisMap[d._id];
+               
 
                 return (
                   <div key={d._id} className="py-3">
@@ -473,19 +458,7 @@ export default function DevisCompressionList() {
                         ) : <span className="text-gray-500">—</span>}
                       </div>
 
-                      <div>
-                        <span className="text-xs font-semibold text-gray-500">Devis</span>{" "}
-                        {devisInfo?.pdf ? (
-                          <a
-                            href={devisInfo.pdf}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-2 py-0.5 text-[12px] text-[#0B1E3A] hover:bg-[#0B1E3A]/5"
-                          >
-                            Ouvrir devis
-                          </a>
-                        ) : <span className="text-gray-500">—</span>}
-                      </div>
+                    
                     </div>
 
                     <p className="mt-2 text-xs font-semibold text-gray-500">{t("columns.attachments")}</p>

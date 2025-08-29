@@ -1,13 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FiSearch, FiXCircle, FiFileText } from "react-icons/fi";
 import Pagination from "@/components/Pagination";
 
+/* ---------- Config ---------- */
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+const FETCH_OPTS = { method: "GET", cache: "no-store", credentials: "include" };
 
-/* Helpers */
+/* ---------- Helpers UI ---------- */
 function shortDate(d) {
   try {
     const dt = new Date(d);
@@ -21,7 +23,6 @@ function shortDate(d) {
 }
 const uniq = (arr) => Array.from(new Set(arr || []));
 
-// normalisation des valeurs provenant de l'API
 const normalizeType = (x) => {
   const s = String(x || "").trim().toLowerCase();
   if (!s) return "";
@@ -41,7 +42,6 @@ const normalizeType = (x) => {
   return s; // compression, torsion, traction, grille, autre…
 };
 
-// libellés jolis
 const displayType = (t) =>
   ({
     compression: "Compression",
@@ -57,43 +57,67 @@ const API_TYPE_MAP = {
   compression: "compression",
   torsion: "torsion",
   traction: "traction",
-  filDresse: "fil", // <- important
+  filDresse: "fil",
   grille: "grille",
   autre: "autre",
 };
+
+/* ---------- Small utilities ---------- */
+// debounce داخل نفس الملف (باش ما نعملوش ملف hook)
+function useDebounced(value, delay = 300) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return v;
+}
+
+// نفّذ وظائف على دفعات (batchSize بالتوازي), لتقليل الضغط على السيرفر/المتصفح
+async function fetchInBatches(fns, batchSize = 6) {
+  const out = [];
+  for (let i = 0; i < fns.length; i += batchSize) {
+    const chunk = fns.slice(i, i + batchSize);
+    const res = await Promise.all(chunk.map((fn) => fn().catch(() => null)));
+    out.push(...res);
+  }
+  return out;
+}
+
+/* ===================================================================== */
 
 export default function DevisList() {
   const router = useRouter();
 
   const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [rowsLoading, setRowsLoading] = useState(true);
+  const [loadingDemandes, setLoadingDemandes] = useState(true);
+  const [updatingDetails, setUpdatingDetails] = useState(false);
 
   const [demandes, setDemandes] = useState([]);
-  const [rows, setRows] = useState([]);
 
   const [q, setQ] = useState("");
+  const dq = useDebounced(q, 300);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Par défaut: tous les types
   const [typeFilter, setTypeFilter] = useState("all");
 
-  // ---- helpers fetch ----
-  const opts = { method: "GET", cache: "no-store", credentials: "include" };
+  // Cache للتفاصيل: demandeId -> {devisNumero, devisPdf, demandeNumeros, types, date}
+  const detailsCacheRef = useRef(new Map());
+  // tick لإجبار React يعيد الرندر بعد ما الكاش يتعبّى
+  const [tick, setTick] = useState(0);
 
-  async function fetchOneType(seg) {
-    // essaie /:type puis ?type=
+  /* ---------- API helpers ---------- */
+  const fetchOneType = useCallback(async (seg) => {
     const try1 = `${BACKEND}/api/admin/devis/${seg}`;
     const try2 = `${BACKEND}/api/admin/devis?type=${encodeURIComponent(seg)}`;
-    let r = await fetch(try1, opts);
-    if (r.status === 404) r = await fetch(try2, opts);
+    let r = await fetch(try1, FETCH_OPTS);
+    if (r.status === 404) r = await fetch(try2, FETCH_OPTS);
     return r;
-  }
+  }, []);
 
-  async function fetchAllTypes() {
-    // on essaie chaque segment connu; on ignore les 404 éventuels
-    const segs = Object.values(API_TYPE_MAP); // ["compression","torsion","traction","fil","grille","autre"]
+  const fetchAllTypes = useCallback(async () => {
+    const segs = Object.values(API_TYPE_MAP);
     const results = await Promise.all(
       segs.map(async (seg) => {
         try {
@@ -111,26 +135,25 @@ export default function DevisList() {
       })
     );
     return results.flat();
-  }
+  }, [fetchOneType]);
 
-  // Charger la liste des demandes selon le type
+  /* ---------- Step 1: حمّل demandes فقط ---------- */
   const loadDemandes = useCallback(async () => {
     try {
       setErr("");
-      setLoading(true);
+      setLoadingDemandes(true);
 
       let items = [];
-
       if (typeFilter === "all") {
-        // ✅ ne plus appeler /devis/all : on fusionne toutes les listes
         items = await fetchAllTypes();
       } else {
-        // type précis
         const seg = API_TYPE_MAP[typeFilter];
         const res = await fetchOneType(seg);
 
         if (res.status === 401) {
-          router.push(`/fr/login?next=${encodeURIComponent("/fr/admin/devis/list")}`);
+          router.push(
+            `/fr/login?next=${encodeURIComponent("/fr/admin/devis/list")}`
+          );
           return;
         }
         if (res.status === 403) {
@@ -139,138 +162,108 @@ export default function DevisList() {
         }
 
         const data = await res.json().catch(() => null);
-        if (!res.ok || !data?.success) throw new Error(data?.message || `Erreur (${res.status})`);
+        if (!res.ok || !data?.success)
+          throw new Error(data?.message || `Erreur (${res.status})`);
         items = Array.isArray(data.items) ? data.items : [];
       }
 
       setDemandes(items);
+      // لا نمسح الكاش باش تبقى التفاصيل القديمة تتعرض فورًا
     } catch (e) {
-      if (String(e?.message) === "__401__" || String(e?.message) === "__403__") {
-        // redirections déjà gérées au-dessus
+      if (
+        String(e?.message) === "__401__" ||
+        String(e?.message) === "__403__"
+      ) {
         return;
       }
       setErr(e?.message || "Erreur réseau");
       setDemandes([]);
     } finally {
-      setLoading(false);
+      setLoadingDemandes(false);
     }
-  }, [router, typeFilter]);
+  }, [router, typeFilter, fetchAllTypes, fetchOneType]);
 
   useEffect(() => {
     loadDemandes();
   }, [loadDemandes]);
 
-  // Construire lignes (groupées par devis)
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setRowsLoading(true);
-      try {
-        if (!demandes.length) {
-          setRows([]);
-          return;
-        }
-
-        const list = await Promise.all(
-          demandes.map(async (d) => {
-            try {
-              const r = await fetch(
-                `${BACKEND}/api/devis/admin/by-demande/${d._id}?numero=${encodeURIComponent(d?.numero || "")}`,
-                { credentials: "include" }
-              );
-              const j = await r.json().catch(() => null);
-              if (!j?.success || !j?.exists) return null;
-
-              const client = `${d?.user?.prenom || ""} ${d?.user?.nom || ""}`.trim();
-              const date = j?.devis?.createdAt || d?.createdAt || "";
-
-              const metaNums = Array.isArray(j?.demandeNumeros)
-                ? j.demandeNumeros
-                : Array.isArray(j?.devis?.meta?.demandes)
-                ? j.devis.meta.demandes.map((x) => x?.numero).filter(Boolean)
-                : j?.devis?.demandeNumero
-                ? [j.devis.demandeNumero]
-                : [d.numero];
-
-              const metaTypesRaw = Array.isArray(j?.devis?.meta?.demandes)
-                ? j.devis.meta.demandes.map((x) => x?.type || x?.typeDemande || x?.kind).filter(Boolean)
-                : j?.devis?.typeDemande || j?.devis?.type || j?.type
-                ? [j.devis.typeDemande || j.devis.type || j.type]
-                : [];
-
-              // fallbacks : type sur la demande, puis valeur du select (si ≠ all)
-              const types = uniq(
-                [
-                  ...(metaTypesRaw || []),
-                  d?.type,
-                  typeFilter !== "all" ? typeFilter : null,
-                ]
-                  .filter(Boolean)
-                  .map(normalizeType)
-              ).filter(Boolean);
-
-              return {
-                demandeId: d._id,
-                demandeNumero: d.numero,
-                client,
-                devisNumero: j?.devis?.numero || "",
-                devisPdf: j?.pdf || "",
-                date,
-                demandeNumeros: metaNums.length ? uniq(metaNums) : [d.numero],
-                types,
-              };
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        if (cancelled) return;
-
-        const base = list.filter(Boolean);
-        const groupedMap = new Map();
-
-        for (const r of base) {
-          const key = r.devisNumero || r.demandeId;
-          const g = groupedMap.get(key);
-          if (!g) {
-            groupedMap.set(key, {
-              ...r,
-              demandeNumeros: uniq(r.demandeNumeros || [r.demandeNumero]),
-              types: uniq(r.types || []),
-            });
-          } else {
-            g.demandeNumeros = uniq([...(g.demandeNumeros || []), ...(r.demandeNumeros || [r.demandeNumero])]);
-            g.types = uniq([...(g.types || []), ...(r.types || [])]);
-            if (new Date(r.date).getTime() > new Date(g.date).getTime()) g.date = r.date;
-          }
-        }
-
-        const compact = Array.from(groupedMap.values()).sort((a, b) => {
-          const ta = new Date(a.date || 0).getTime();
-          const tb = new Date(b.date || 0).getTime();
-          return tb - ta;
-        });
-
-        setRows(compact);
-        setPage(1);
-      } finally {
-        if (!cancelled) setRowsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  /* ---------- Step 2: ابنِ صفوف أساسية من demandes (بدون تفاصيل) ---------- */
+  const baseRows = useMemo(() => {
+    return (demandes || []).map((d) => {
+      const client = `${d?.user?.prenom || ""} ${d?.user?.nom || ""}`.trim();
+      const types = [
+        normalizeType(d?.type),
+        typeFilter !== "all" ? typeFilter : null,
+      ].filter(Boolean);
+      return {
+        demandeId: d._id,
+        demandeNumero: d.numero,
+        client,
+        date: d?.createdAt || "",
+        types: Array.from(new Set(types)),
+        devisNumero: "", // يكمّل لاحقًا
+        devisPdf: "",
+        demandeNumeros: [d.numero],
+      };
+    });
   }, [demandes, typeFilter]);
 
-  // Filtrage (recherche plein texte)
+  /* ---------- Step 3: دمج التفاصيل الموجودة في الكاش + تجميع حسب رقم devis ---------- */
+  const rows = useMemo(() => {
+    // ادمج الكاش
+    const merged = baseRows.map((r) => {
+      const det = detailsCacheRef.current.get(r.demandeId);
+      if (!det) return r;
+      return {
+        ...r,
+        ...det,
+        demandeNumeros: det?.demandeNumeros?.length
+          ? uniq(det.demandeNumeros)
+          : [r.demandeNumero],
+        types: uniq([...(r.types || []), ...(det.types || [])]),
+        date: det?.date || r.date,
+      };
+    });
+
+    // اجمع الصفوف اللي عندها نفس رقم devis
+    const grouped = new Map();
+    for (const r of merged) {
+      const key = r.devisNumero || r.demandeId;
+      const g = grouped.get(key);
+      if (!g) {
+        grouped.set(key, {
+          ...r,
+          demandeNumeros: uniq(r.demandeNumeros || [r.demandeNumero]),
+          types: uniq(r.types || []),
+        });
+      } else {
+        g.demandeNumeros = uniq([
+          ...(g.demandeNumeros || []),
+          ...(r.demandeNumeros || [r.demandeNumero]),
+        ]);
+        g.types = uniq([...(g.types || []), ...(r.types || [])]);
+        if (new Date(r.date).getTime() > new Date(g.date).getTime())
+          g.date = r.date;
+      }
+    }
+
+    return Array.from(grouped.values()).sort(
+      (a, b) => new Date(b.date || 0) - new Date(a.date || 0)
+    );
+  }, [baseRows, tick]);
+
+  /* ---------- Step 4: فلترة ---------- */
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
+    const needle = dq.trim().toLowerCase();
     if (!needle) return rows;
     return rows.filter((r) => {
       const client = (r.client || "").toLowerCase();
       const devisNum = (r.devisNumero || "").toLowerCase();
-      const demNums = ((r.demandeNumeros && r.demandeNumeros.join(" ")) || r.demandeNumero || "").toLowerCase();
+      const demNums = (
+        (r.demandeNumeros && r.demandeNumeros.join(" ")) ||
+        r.demandeNumero ||
+        ""
+      ).toLowerCase();
       const typesStr = (r.types || []).join(" ").toLowerCase();
       const dateStr = shortDate(r.date).toLowerCase();
       return (
@@ -281,9 +274,9 @@ export default function DevisList() {
         dateStr.includes(needle)
       );
     });
-  }, [rows, q]);
+  }, [rows, dq]);
 
-  // Pagination
+  /* ---------- Step 5: Pagination ---------- */
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     if (page > totalPages) setPage(totalPages);
@@ -291,7 +284,7 @@ export default function DevisList() {
 
   useEffect(() => {
     setPage(1);
-  }, [q]);
+  }, [dq, typeFilter]);
 
   const { pageItems, total } = useMemo(() => {
     const total = filtered.length;
@@ -300,19 +293,91 @@ export default function DevisList() {
     return { pageItems: filtered.slice(start, end), total };
   }, [filtered, page, pageSize]);
 
-  const isBusy = loading || rowsLoading;
+  /* ---------- Step 6: هات تفاصيل فقط للصفحة المعروضة (دفعات) ---------- */
+  useEffect(() => {
+    // IDs المطلوبة ولم تُحمّل تفاصيلها بعد
+    const idsToFetch = pageItems
+      .map((r) => r.demandeId)
+      .filter((id) => id && !detailsCacheRef.current.has(id));
+
+    if (idsToFetch.length === 0) return;
+
+    let cancelled = false;
+    const controller = new AbortController();
+    setUpdatingDetails(true);
+
+    (async () => {
+      const jobs = idsToFetch.map((id) => {
+        // نحتاج demandeNumero للـ id (لاستدعاء endpoint نفسه اللي عندك)
+        const r = pageItems.find((x) => x.demandeId === id);
+        const numero = r?.demandeNumero || "";
+        return async () => {
+          const res = await fetch(
+            `${BACKEND}/api/devis/admin/by-demande/${id}?numero=${encodeURIComponent(
+              numero
+            )}`,
+            { credentials: "include", signal: controller.signal }
+          );
+          const j = await res.json().catch(() => null);
+          if (!j?.success || !j?.exists) return;
+
+          const metaNums = Array.isArray(j?.demandeNumeros)
+            ? j.demandeNumeros
+            : Array.isArray(j?.devis?.meta?.demandes)
+            ? j.devis.meta.demandes.map((x) => x?.numero).filter(Boolean)
+            : j?.devis?.demandeNumero
+            ? [j.devis.demandeNumero]
+            : [];
+
+          const metaTypesRaw = Array.isArray(j?.devis?.meta?.demandes)
+            ? j.devis.meta.demandes
+                .map((x) => x?.type || x?.typeDemande || x?.kind)
+                .filter(Boolean)
+            : j?.devis?.typeDemande || j?.devis?.type || j?.type
+            ? [j?.devis?.typeDemande || j?.devis?.type || j?.type]
+            : [];
+
+          const det = {
+            devisNumero: j?.devis?.numero || "",
+            devisPdf: j?.pdf || "",
+            demandeNumeros: metaNums.length ? uniq(metaNums) : undefined,
+            types: uniq((metaTypesRaw || []).map(normalizeType)).filter(
+              Boolean
+            ),
+            date: j?.devis?.createdAt || "",
+          };
+
+          detailsCacheRef.current.set(id, det);
+        };
+      });
+
+      await fetchInBatches(jobs, 6);
+      if (!cancelled) setTick((t) => t + 1);
+    })()
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setUpdatingDetails(false);
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [pageItems]);
+
+  /* ---------- Render ---------- */
+  const isBusy = loadingDemandes && rows.length === 0;
 
   return (
     <div className="py-6 space-y-6 sm:space-y-8">
       <div className="mx-auto w-full max-w-6xl space-y-8">
-        {/* Header (centré) */}
+        {/* Header */}
         <header className="space-y-4 text-center">
           <h1 className="text-3xl font-extrabold tracking-tight text-[#0B1E3A]">
             Liste des devis (par demande)
           </h1>
           {err && <p className="text-sm text-red-600">{err}</p>}
 
-          {/* Select + Search sous le titre */}
           <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row">
             <select
               value={typeFilter}
@@ -340,16 +405,14 @@ export default function DevisList() {
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Rechercher : devis, demande, client, type, date…"
                 aria-label="Recherche devis"
-                className="w-full rounded-xl border border-gray-300 bg-white px-9 pr-9 py-2 text-sm text-[#0B1E3A]
-                           shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
+                className="w-full rounded-xl border border-gray-300 bg-white px-9 pr-9 py-2 text-sm text-[#0B1E3A] shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
               />
               {q && (
                 <button
                   type="button"
                   onClick={() => setQ("")}
                   aria-label="Effacer la recherche"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center
-                             h-6 w-6 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-6 w-6 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition"
                 >
                   <FiXCircle size={16} />
                 </button>
@@ -358,7 +421,6 @@ export default function DevisList() {
           </div>
         </header>
 
-        {/* Section encadrée */}
         <section className="rounded-2xl border border-[#F7C60022] bg-white p-0 shadow-[0_6px_22px_rgba(0,0,0,.06)]">
           {isBusy ? (
             <div className="px-6 py-6 space-y-3 animate-pulse">
@@ -403,12 +465,15 @@ export default function DevisList() {
 
                       <tbody className="divide-y divide-gray-100">
                         {pageItems.map((r) => (
-                          <tr key={r.devisNumero || r.demandeId} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
-                            {/* N° Devis + cercle jaune */}
+                          <tr
+                            key={r.devisNumero || r.demandeId}
+                            className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors"
+                          >
+                            {/* N° Devis */}
                             <td className="p-4 align-top font-mono">
                               <div className="flex items-center gap-2">
                                 <span className="h-3 w-3 rounded-full bg-[#F7C600] inline-block" />
-                                <span>{r.devisNumero}</span>
+                                <span>{r.devisNumero || <span className="text-gray-400">—</span>}</span>
                               </div>
                             </td>
 
@@ -494,7 +559,7 @@ export default function DevisList() {
                         <p className="text-xs font-semibold text-gray-500">N° Devis</p>
                         <div className="mt-0.5 flex items-center gap-2 text-[#0B1E3A]">
                           <span className="h-3 w-3 rounded-full bg-[#F7C600] inline-block" />
-                          <span className="font-mono">{r.devisNumero}</span>
+                          <span className="font-mono">{r.devisNumero || "—"}</span>
                         </div>
 
                         <p className="mt-3 text-xs font-semibold text-gray-500">Demande(s)</p>
@@ -549,8 +614,11 @@ export default function DevisList() {
                   total={total}
                   onPageChange={setPage}
                   onPageSizeChange={setPageSize}
-                  pageSizeOptions={[5,10, 20, 50]}
+                  pageSizeOptions={[5, 10, 20, 50]}
                 />
+                {updatingDetails && (
+                  <div className="mt-2 text-xs opacity-60">Mise à jour…</div>
+                )}
               </div>
             </>
           )}
