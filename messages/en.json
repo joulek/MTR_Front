@@ -1,4 +1,10 @@
-{
+{"reclamationsPage": {
+        "seo": {
+          "title": "Submit a claim | MTR Industry",
+          "description": "Customer claim form.",
+          "ogAlt": "Submit a claim – MTR Industry"
+        }
+      },
   "auth": {
     "setPasswordPage": {
       "seo": {
@@ -103,8 +109,15 @@
     "client": {
       "reclamationForm": {
         "seo": {
-          "title": "Submit a claim – Client area | MTR Industry",
-          "description": "Submit a claim against a quote, purchase order, delivery note or invoice. Add details and attachments.",
+          "title": "Submit a claim | MTR Industry",
+          "description": "Submit a claim (quote, purchase order, delivery note or invoice) and attach files.",
+          "ogAlt": "Submit a claim – MTR Industry"
+        }
+      },
+      "reclamationsPage": {
+        "seo": {
+          "title": "Submit a claim | MTR Industry",
+          "description": "Customer claim form.",
           "ogAlt": "Submit a claim – MTR Industry"
         }
       },
@@ -255,17 +268,9 @@
         "Stainless steel spring wire"
       ],
       "windingDirection": "Winding direction",
-      "windingOptions": [
-        "Left winding",
-        "Right winding"
-      ],
+      "windingOptions": ["Left winding", "Right winding"],
       "ringPosition": "Ring position",
-      "ringOptions": [
-        "0°",
-        "90°",
-        "180°",
-        "270°"
-      ],
+      "ringOptions": ["0°", "90°", "180°", "270°"],
       "hookType": "Hook type",
       "hookOptions": [
         "German hook",
@@ -316,17 +321,9 @@
         "Stainless steel spring wire"
       ],
       "windingDirection": "Winding direction",
-      "windingOptions": [
-        "Left winding",
-        "Right winding"
-      ],
+      "windingOptions": ["Left winding", "Right winding"],
       "extremityType": "Spring end type",
-      "extremityOptions": [
-        "ERM",
-        "EL",
-        "ELM",
-        "ERNM"
-      ],
+      "extremityOptions": ["ERM", "EL", "ELM", "ERNM"],
       "extremityAlt": "Spring ends",
       "docs": "Associated documents",
       "specialReq": "Special requirements",
@@ -357,15 +354,9 @@
       "L1": "Leg length 1 (L1)",
       "L2": "Leg length 2 (L2)",
       "orientation": "Leg orientation",
-      "orientationOptions": [
-        "Symmetrical",
-        "Asymmetrical"
-      ],
+      "orientationOptions": ["Symmetrical", "Asymmetrical"],
       "windingDirection": "Winding direction",
-      "windingOptions": [
-        "Left winding",
-        "Right winding"
-      ],
+      "windingOptions": ["Left winding", "Right winding"],
       "quantity": "Quantity",
       "material": "Material",
       "materialOptions": [
@@ -398,10 +389,7 @@
       "loginToSend": "Login to send",
       "unit": "Quantity unit",
       "unitLong": "Length unit",
-      "unitOptions": [
-        "Pieces",
-        "Kg"
-      ],
+      "unitOptions": ["Pieces", "Kg"],
       "quantityWanted": "Desired quantity",
       "material": "Material",
       "materialChecks": [
@@ -441,11 +429,7 @@
       "selectPlaceholder": "-- Select --",
       "quantity": "Quantity",
       "material": "Material",
-      "materialChecks": [
-        "Galvanized steel",
-        "Black steel",
-        "Stainless steel"
-      ],
+      "materialChecks": ["Galvanized steel", "Black steel", "Stainless steel"],
       "finish": "Finish / treatment",
       "finishChecks_en": [
         "Painting",

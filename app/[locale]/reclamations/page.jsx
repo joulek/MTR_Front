@@ -1,3 +1,4 @@
+// app/[locale]/reclamations/page.jsx
 import ReclamationClient from "../client/reclamations/ReclamationClient";
 import SiteHeader from "@/components/SiteHeader";
 import { getTranslations } from "next-intl/server";
@@ -5,19 +6,20 @@ import Script from "next/script";
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-export async function generateMetadata({ params: { locale } }) {
-  // ⚠️ Choisis un namespace et garde-le pareil dans fr/en.
-  // Si tu préfères sous "auth", renomme ici en "auth.reclamationsPage.seo" et ajuste les JSON.
+export async function generateMetadata(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
+  // Garde bien le même namespace dans tes JSON de traduction
   const t = await getTranslations({ locale, namespace: "reclamationsPage.seo" });
 
   const title = t("title", { default: "Passer une réclamation | MTR Industry" });
   const description = t("description", {
-    default:
-      "Soumettez une réclamation (devis, bon de commande, bon de livraison ou facture) et joignez des fichiers.",
+    default: "Soumettez une réclamation (devis, bon de commande, bon de livraison ou facture) et joignez des fichiers.",
   });
 
   const url = `${APP_URL}/${locale}/reclamations`;
-  const ogImage = `${APP_URL}/og/reclamations.jpg`; // ajoute /public/og/reclamations.jpg (1200x630)
+  const ogImage = `${APP_URL}/og/reclamations.jpg`;
 
   return {
     title,
@@ -33,15 +35,19 @@ export async function generateMetadata({ params: { locale } }) {
       description,
       siteName: "MTR Industry",
       images: [{ url: ogImage, width: 1200, height: 630, alt: t("ogAlt", { default: "Passer une réclamation – MTR Industry" }) }],
-      locale,
+      // (optionnel) locale OG : "fr_FR" / "en_US"
+      // locale: locale === "fr" ? "fr_FR" : "en_US",
     },
     twitter: { card: "summary_large_image", title, description, images: [ogImage] },
-    // C'est un formulaire -> souvent on évite l'indexation. Mets index:true si tu veux l'indexer.
+    // Formulaire : souvent désindexé
     robots: { index: false, follow: false, noimageindex: true },
   };
 }
 
-export default async function Page({ params: { locale } }) {
+export default async function Page(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -59,8 +65,12 @@ export default async function Page({ params: { locale } }) {
 
   return (
     <>
-      <Script id="ldjson-reclamations" type="application/ld+json" strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <Script
+        id="ldjson-reclamations"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <SiteHeader />
 

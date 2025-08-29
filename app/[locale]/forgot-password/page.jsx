@@ -1,10 +1,14 @@
+// app/[locale]/forgot-password/page.jsx  (SERVER)
 import ForgotPasswordClient from "./ForgotPasswordClient";
 import { getTranslations } from "next-intl/server";
 import Script from "next/script";
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-export async function generateMetadata({ params: { locale } }) {
+export async function generateMetadata(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const t = await getTranslations({ locale, namespace: "auth.forgotPage.seo" });
 
   const title = t("title", { default: "Mot de passe oublié – MTR Industry" });
@@ -15,8 +19,8 @@ export async function generateMetadata({ params: { locale } }) {
   const url = `${APP_URL}/${locale}/forgot-password`;
   const images = [
     {
-      url: `${APP_URL}/og/forgot-password.jpg`, // ajoute cette image dans /public/og/ (1200x630)
-      width: 1200, 
+      url: `${APP_URL}/og/forgot-password.jpg`,
+      width: 1200,
       height: 630,
       alt: t("ogAlt", { default: "Réinitialiser mon mot de passe – MTR Industry" }),
     },
@@ -29,14 +33,17 @@ export async function generateMetadata({ params: { locale } }) {
       canonical: `/${locale}/forgot-password`,
       languages: { fr: "/fr/forgot-password", en: "/en/forgot-password" },
     },
-    openGraph: { type: "website", url, title, description, siteName: "MTR Industry", images, locale },
+    openGraph: { type: "website", url, title, description, siteName: "MTR Industry", images /*, locale: ...*/ },
     twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
-    // Page d'auth → éviter l'indexation
+    // Page d’auth → éviter l’indexation
     robots: { index: false, follow: false, noimageindex: true },
   };
 }
 
-export default async function Page({ params: { locale } }) {
+export default async function Page(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -57,8 +64,12 @@ export default async function Page({ params: { locale } }) {
 
   return (
     <>
-      <Script id="ldjson-forgot" type="application/ld+json" strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <Script
+        id="ldjson-forgot"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ForgotPasswordClient />
     </>
   );

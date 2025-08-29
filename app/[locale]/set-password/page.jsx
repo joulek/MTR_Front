@@ -1,3 +1,4 @@
+// app/[locale]/set-password/page.jsx
 import SetPasswordClient from "./SetPasswordClient";
 import { getTranslations } from "next-intl/server";
 import Script from "next/script";
@@ -5,8 +6,10 @@ import Script from "next/script";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
 // ⬇️ SEO côté serveur
-export async function generateMetadata({ params: { locale } }) {
-  // ajoute ce namespace dans tes fichiers de traductions (voir §3)
+export async function generateMetadata(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const t = await getTranslations({ locale, namespace: "auth.setPasswordPage.seo" });
 
   const title = t("title", { default: "Définir mon mot de passe | MTR Industry" });
@@ -31,14 +34,18 @@ export async function generateMetadata({ params: { locale } }) {
       description,
       images: [{ url: og, width: 1200, height: 630, alt: t("ogAlt", { default: "Définir mon mot de passe – MTR Industry" }) }],
       siteName: "MTR Industry",
-      locale,
+      // (optionnel) locale OG standardisée :
+      // locale: locale === "fr" ? "fr_FR" : "en_US",
     },
     twitter: { card: "summary_large_image", title, description, images: [og] },
     robots: { index: false, follow: false, noimageindex: true }, // page d'auth
   };
 }
 
-export default async function Page({ params: { locale } }) {
+export default async function Page(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -56,9 +63,12 @@ export default async function Page({ params: { locale } }) {
 
   return (
     <>
-      <Script id="ldjson-setpwd" type="application/ld+json" strategy="afterInteractive"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-
+      <Script
+        id="ldjson-setpwd"
+        type="application/ld+json"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SetPasswordClient />
     </>
   );

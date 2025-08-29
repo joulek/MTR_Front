@@ -5,7 +5,10 @@ import Script from "next/script";
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-export async function generateMetadata({ params: { locale } }) {
+export async function generateMetadata(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
   const t = await getTranslations({ locale, namespace: "auth.client.claimsPage.seo" });
 
   const title = t("title", { default: "Mes réclamations – Espace client | MTR Industry" });
@@ -28,10 +31,7 @@ export async function generateMetadata({ params: { locale } }) {
     description,
     alternates: {
       canonical: `/${locale}/client/mes-reclamations`,
-      languages: {
-        fr: "/fr/client/mes-reclamations",
-        en: "/en/client/mes-reclamations",
-      },
+      languages: { fr: "/fr/client/mes-reclamations", en: "/en/client/mes-reclamations" },
     },
     openGraph: {
       type: "website",
@@ -40,44 +40,39 @@ export async function generateMetadata({ params: { locale } }) {
       description,
       siteName: "MTR Industry",
       images,
-      locale,
+      // (optionnel) locale OG :
+      // locale: locale === "fr" ? "fr_FR" : "en_US",
     },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: images.map((i) => i.url),
-    },
-    // page d'espace client → pas indexée
-    robots: {
-      index: false,
-      follow: false,
-      googleBot: { index: false, follow: false, noimageindex: true },
-      nocache: true,
-    },
+    twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
+    // Espace client → pas indexée
+    robots: { index: false, follow: false, googleBot: { index: false, follow: false, noimageindex: true }, nocache: true },
   };
 }
 
-export default async function Page({ params: { locale } }) {
-  // ⬇️ même namespace que dans generateMetadata
+export default async function Page(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
   const tSeo = await getTranslations({ locale, namespace: "auth.client.claimsPage.seo" });
+  const isFr = locale === "fr";
 
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: locale === "fr" ? "Accueil" : "Home", item: `${APP_URL}/${locale}` },
-      { "@type": "ListItem", position: 2, name: locale === "fr" ? "Espace client" : "Client area", item: `${APP_URL}/${locale}/client` },
-      { "@type": "ListItem", position: 3, name: locale === "fr" ? "Mes réclamations" : "My claims", item: `${APP_URL}/${locale}/client/mes-reclamations` },
+      { "@type": "ListItem", position: 1, name: isFr ? "Accueil" : "Home", item: `${APP_URL}/${locale}` },
+      { "@type": "ListItem", position: 2, name: isFr ? "Espace client" : "Client area", item: `${APP_URL}/${locale}/client` },
+      { "@type": "ListItem", position: 3, name: isFr ? "Mes réclamations" : "My claims", item: `${APP_URL}/${locale}/client/mes-reclamations` },
     ],
   };
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    name: tSeo("title", { default: "Mes réclamations – Espace client" }),
+    name: tSeo("title", { default: isFr ? "Mes réclamations – Espace client" : "My claims – Client area" }),
     description: tSeo("description", {
-      default: "Espace personnel pour consulter vos réclamations et ouvrir les PDF associés.",
+      default: isFr
+        ? "Espace personnel pour consulter vos réclamations et ouvrir les PDF associés."
+        : "Personal area to view your claims and open related PDFs.",
     }),
     primaryImageOfPage: `${APP_URL}/og/mes-reclamations.jpg`,
     breadcrumb,

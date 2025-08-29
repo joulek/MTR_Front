@@ -5,11 +5,14 @@ import Script from "next/script";
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
 
-// on garde le composant client, mais la page elle-même reste "server component"
+// Composant client (garde ton fichier avec "use client")
 const ReclamationClient = dynamic(() => import("./ReclamationClient"));
 
-export async function generateMetadata({ params: { locale } }) {
-  const t = await getTranslations({ locale, namespace: "auth.client.reclamationForm.seo" });
+export async function generateMetadata(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
+  const t = await getTranslations({ locale, namespace: "auth.client.reclamationsPage.seo" });
 
   const title = t("title", { default: "Passer une réclamation – Espace client | MTR Industry" });
   const description = t("description", {
@@ -20,7 +23,7 @@ export async function generateMetadata({ params: { locale } }) {
   const url = `${APP_URL}/${locale}/client/reclamations`;
   const images = [
     {
-      url: `${APP_URL}/og/reclamations.jpg`, // place cette image dans /public/og/
+      url: `${APP_URL}/og/reclamations.jpg`,
       width: 1200,
       height: 630,
       alt: t("ogAlt", { default: "Passer une réclamation – MTR Industry" }),
@@ -34,23 +37,24 @@ export async function generateMetadata({ params: { locale } }) {
       canonical: `/${locale}/client/reclamations`,
       languages: { fr: "/fr/client/reclamations", en: "/en/client/reclamations" },
     },
-    openGraph: { type: "website", url, title, description, siteName: "MTR Industry", images, locale },
-    twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
-    // Espace client : on n'indexe pas
+    openGraph: { type: "website", url, title, description, siteName: "MTR Industry", images /*, locale: ...*/ },
+    twitter: { card: "summary_large_image", title, description, images: images.map(i => i.url) },
     robots: { index: false, follow: false, noimageindex: true },
   };
 }
 
-export default async function Page({ params: { locale } }) {
-  const t = await getTranslations({ locale, namespace: "auth.client.reclamationForm.seo" });
+export default async function Page(props) {
+  // ✅ Next 15 : params est une Promise
+  const { locale } = await props.params;
+
+  const t = await getTranslations({ locale, namespace: "auth.client.reclamationsPage.seo" });
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: t("title", { default: "Passer une réclamation – Espace client" }),
     description: t("description", {
-      default:
-        "Formulaire client pour créer une réclamation avec documents et pièces jointes.",
+      default: "Formulaire client pour créer une réclamation avec documents et pièces jointes.",
     }),
     primaryImageOfPage: `${APP_URL}/og/reclamations.jpg`,
     breadcrumb: {

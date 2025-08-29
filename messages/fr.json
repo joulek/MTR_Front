@@ -1,4 +1,10 @@
-{
+{"reclamationsPage": {
+        "seo": {
+          "title": "Submit a claim | MTR Industry",
+          "description": "Customer claim form.",
+          "ogAlt": "Submit a claim – MTR Industry"
+        }
+      },
   "auth": {
     "setPasswordPage": {
       "seo": {
@@ -97,6 +103,13 @@
         "seo": {
           "title": "Passer une réclamation – Espace client | MTR Industry",
           "description": "Soumettez une réclamation sur un devis, bon de commande, bon de livraison ou facture. Ajoutez des précisions et des pièces jointes.",
+          "ogAlt": "Passer une réclamation – MTR Industry"
+        }
+      },
+      "reclamationsPage": {
+        "seo": {
+          "title": "Passer une réclamation | MTR Industry",
+          "description": "Formulaire de réclamation client.",
           "ogAlt": "Passer une réclamation – MTR Industry"
         }
       },
@@ -248,17 +261,9 @@
         "Fil ressort inox"
       ],
       "windingDirection": "Sens d’enroulement",
-      "windingOptions": [
-        "Enroulement gauche",
-        "Enroulement droite"
-      ],
+      "windingOptions": ["Enroulement gauche", "Enroulement droite"],
       "ringPosition": "Position des anneaux",
-      "ringOptions": [
-        "0°",
-        "90°",
-        "180°",
-        "270°"
-      ],
+      "ringOptions": ["0°", "90°", "180°", "270°"],
       "hookType": "Type d’accrochage",
       "hookOptions": [
         "Anneau Allemand",
@@ -308,17 +313,9 @@
         "Fil ressort inox"
       ],
       "windingDirection": "Sens d’enroulement",
-      "windingOptions": [
-        "Enroulement gauche",
-        "Enroulement droite"
-      ],
+      "windingOptions": ["Enroulement gauche", "Enroulement droite"],
       "extremityType": "Type d’extrémité du ressort",
-      "extremityOptions": [
-        "ERM",
-        "EL",
-        "ELM",
-        "ERNM"
-      ],
+      "extremityOptions": ["ERM", "EL", "ELM", "ERNM"],
       "extremityAlt": "Type d’extrémité du ressort",
       "docs": "Documents associés",
       "specialReq": "Exigences particulières",
@@ -350,15 +347,9 @@
       "L1": "Longueur branche 1 (L1)",
       "L2": "Longueur branche 2 (L2)",
       "orientation": "Orientation des branches",
-      "orientationOptions": [
-        "Symétriques",
-        "Asymétriques"
-      ],
+      "orientationOptions": ["Symétriques", "Asymétriques"],
       "windingDirection": "Sens d’enroulement",
-      "windingOptions": [
-        "Enroulement gauche",
-        "Enroulement droite"
-      ],
+      "windingOptions": ["Enroulement gauche", "Enroulement droite"],
       "quantity": "Quantité",
       "material": "Matière",
       "materialOptions": [
@@ -392,10 +383,7 @@
       "diameter": "Diamètre du fil (mm)",
       "unit": "Unité de quantité",
       "unitLong": "Unité de Longueur",
-      "unitOptions": [
-        "Pièces",
-        "Kg"
-      ],
+      "unitOptions": ["Pièces", "Kg"],
       "quantityWanted": "Quantité souhaitée",
       "material": "Matière",
       "materialChecks": [
@@ -434,18 +422,9 @@
       "D1": "Diamètre du fil du cadre (D₁)",
       "quantity": "Quantité",
       "material": "Matière",
-      "materialChecks": [
-        "Acier galvanisé",
-        "Acier Noir",
-        "Inox"
-      ],
+      "materialChecks": ["Acier galvanisé", "Acier Noir", "Inox"],
       "finish": "Finition / traitement",
-      "finishChecks": [
-        "Peinture",
-        "Chromage",
-        "Galvanisation",
-        "Autre"
-      ],
+      "finishChecks": ["Peinture", "Chromage", "Galvanisation", "Autre"],
       "docs": "Documents (plan, croquis)",
       "specialReq": "Exigences particulières",
       "otherRemarks": "Autres remarques",
@@ -468,12 +447,7 @@
       "dimensions": "Diamètre du fil en mm",
       "quantity": "Quantité",
       "material": "Matière",
-      "materialOptions": [
-        "Acier",
-        "Acier galvanisé",
-        "Inox",
-        "Autre"
-      ],
+      "materialOptions": ["Acier", "Acier galvanisé", "Inox", "Autre"],
       "docs": "Documents (plan, croquis, photo)",
       "specialReq": "Exigences particulières",
       "otherRemarks": "Autres remarques",

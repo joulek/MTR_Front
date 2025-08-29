@@ -1,4 +1,3 @@
-// app/[locale]/change-password/page.jsx
 "use client";
 
 import { useState } from "react";
@@ -10,7 +9,7 @@ import SiteHeader from "@/components/SiteHeader";
 
 const BACKEND = (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000").replace(/\/$/, "");
 
-export default function ChangePasswordPage() {
+export default function ChangePasswordClient() {
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
@@ -25,21 +24,18 @@ export default function ChangePasswordPage() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setOk("");
-    setErr("");
-    setLoading(true);
+    setOk(""); setErr(""); setLoading(true);
     try {
       const res = await fetch(`${BACKEND}/api/users/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // cookie d'auth
+        credentials: "include",
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || t("errors.changePassword") || "Échec de la modification.");
       setOk(t("passwordChanged") || "Mot de passe modifié.");
-      setCurrentPassword("");
-      setNewPassword("");
+      setCurrentPassword(""); setNewPassword("");
       setTimeout(() => router.push(`/${locale}/login`), 1200);
     } catch (e) {
       setErr(e?.message || t("errors.network") || "Erreur réseau.");
@@ -54,25 +50,13 @@ export default function ChangePasswordPage() {
       <main className="pt-0">
         <div className="fixed inset-x-0 top-[96px] bottom-0 bg-[#f5f5f5] flex items-center justify-center px-4">
           <div className="w-[520px] max-w-[92vw] min-h-[440px] rounded-2xl shadow-2xl border border-[#ffb400]/50 bg-white p-8 relative">
-            {/* Avatar / icône */}
             <div className="flex justify-center -mt-14 mb-4 pointer-events-none">
               <div className="bg-white rounded-full shadow-lg p-3 border border-[#ffb400]/60">
-                <Image
-                  src="/reset_password.png"
-                  alt="Modifier le mot de passe"
-                  width={80}
-                  height={80}
-                  className="object-contain"
-                  priority
-                />
+                <Image src="/reset_password.png" alt="Modifier le mot de passe" width={80} height={80} className="object-contain" priority />
               </div>
             </div>
 
-            {/* Titre */}
-            <h1
-              className="text-2xl font-extrabold text-[#002147] text-center"
-              style={{ fontFamily: "'Lora', serif" }}
-            >
+            <h1 className="text-2xl font-extrabold text-[#002147] text-center" style={{ fontFamily: "'Lora', serif" }}>
               {t("changePasswordTitle") || "Modifier mon mot de passe"}
             </h1>
             <p className="text-sm text-gray-600 mt-2 text-center">
@@ -80,7 +64,6 @@ export default function ChangePasswordPage() {
             </p>
 
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-              {/* Mot de passe actuel */}
               <div>
                 <label className="block font-semibold text-[#002147]">
                   {t("currentPassword") || "Mot de passe actuel"} <span className="text-red-500">*</span>
@@ -95,18 +78,12 @@ export default function ChangePasswordPage() {
                     placeholder={t("placeholders.password") || "Votre mot de passe"}
                     autoComplete="current-password"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrent(!showCurrent)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#002147]"
-                    aria-label={showCurrent ? "Masquer" : "Afficher"}
-                  >
+                  <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#002147]" aria-label={showCurrent ? "Masquer" : "Afficher"}>
                     {showCurrent ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
               </div>
 
-              {/* Nouveau mot de passe */}
               <div>
                 <label className="block font-semibold text-[#002147]">
                   {t("newPassword") || "Nouveau mot de passe"} <span className="text-red-500">*</span>
@@ -121,28 +98,16 @@ export default function ChangePasswordPage() {
                     placeholder={t("placeholders.password") || "Choisissez un mot de passe"}
                     autoComplete="new-password"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowNew(!showNew)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#002147]"
-                    aria-label={showNew ? "Masquer" : "Afficher"}
-                  >
+                  <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#002147]" aria-label={showNew ? "Masquer" : "Afficher"}>
                     {showNew ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
               </div>
 
-              {/* Messages */}
               {ok && <p className="text-green-600 text-sm font-semibold">{ok}</p>}
               {err && <p className="text-red-600 text-sm font-semibold">{err}</p>}
 
-              {/* Bouton */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-12 rounded-xl bg-[#002147] hover:bg-[#00366b] text-white font-bold disabled:opacity-60"
-                style={{ fontFamily: "'Lora', serif" }}
-              >
+              <button type="submit" disabled={loading} className="w-full h-12 rounded-xl bg-[#002147] hover:bg-[#00366b] text-white font-bold disabled:opacity-60" style={{ fontFamily: "'Lora', serif" }}>
                 {loading ? (t("loading") || "Chargement…") : (t("confirmChange") || "Confirmer")}
               </button>
             </form>
