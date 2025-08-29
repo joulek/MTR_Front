@@ -496,8 +496,8 @@ export default function AdminDevisTorsionPage() {
           setSelectedIds([]);
           load();
         }}
-        demandKinds={["fil"]}
-        articleKinds={["fil", "fil_dresse_coupe"]}
+        demandKinds={["devisTorsion"]}
+        articleKinds={["devisTorsion", "devisTorsion"]}
       />
 
       {/* Toast */}

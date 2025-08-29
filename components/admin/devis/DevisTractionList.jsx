@@ -492,8 +492,8 @@ export default function AdminDevisTractionPage() {
           setSelectedIds([]);
           load(); // recharge la liste après création
         }}
-        demandKinds={["compression"]}
-        articleKinds={["compression"]}
+        demandKinds={["devisTraction"]}
+        articleKinds={["devisTraction"]}
       />
 
 

@@ -492,8 +492,8 @@ export default function DevisAutrePage() {
           setSelectedIds([]);
           load(); // recharge la liste après création
         }}
-        demandKinds={["compression"]}
-        articleKinds={["compression"]}
+        demandKinds={["devisAutre"]}
+        articleKinds={["devisAutre"]}
       />
 
 
