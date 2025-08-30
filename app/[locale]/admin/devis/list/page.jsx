@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FiSearch, FiXCircle, FiFileText } from "react-icons/fi";
+import { FiSearch, FiXCircle, FiFileText, FiChevronDown } from "react-icons/fi";
 import Pagination from "@/components/Pagination";
 
 /* ---------- Config ---------- */
@@ -43,14 +43,14 @@ const normalizeType = (x) => {
 };
 
 const displayType = (t) =>
-  ({
-    compression: "Compression",
-    torsion: "Torsion",
-    traction: "Traction",
-    filDresse: "Fil dressé coupé",
-    grille: "Grille métallique",
-    autre: "Autre article",
-  }[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1) : ""));
+({
+  compression: "Compression",
+  torsion: "Torsion",
+  traction: "Traction",
+  filDresse: "Fil dressé coupé",
+  grille: "Grille métallique",
+  autre: "Autre article",
+}[t] || (t ? t.charAt(0).toUpperCase() + t.slice(1) : ""));
 
 /* Mapping UI → segments API connus */
 const API_TYPE_MAP = {
@@ -319,18 +319,18 @@ export default function DevisList() {
           const metaNums = Array.isArray(j?.demandeNumeros)
             ? j.demandeNumeros
             : Array.isArray(j?.devis?.meta?.demandes)
-            ? j.devis.meta.demandes.map((x) => x?.numero).filter(Boolean)
-            : j?.devis?.demandeNumero
-            ? [j.devis.demandeNumero]
-            : [];
+              ? j.devis.meta.demandes.map((x) => x?.numero).filter(Boolean)
+              : j?.devis?.demandeNumero
+                ? [j.devis.demandeNumero]
+                : [];
 
           const metaTypesRaw = Array.isArray(j?.devis?.meta?.demandes)
             ? j.devis.meta.demandes
-                .map((x) => x?.type || x?.typeDemande || x?.kind)
-                .filter(Boolean)
+              .map((x) => x?.type || x?.typeDemande || x?.kind)
+              .filter(Boolean)
             : j?.devis?.typeDemande || j?.devis?.type || j?.type
-            ? [j?.devis?.typeDemande || j?.devis?.type || j?.type]
-            : [];
+              ? [j?.devis?.typeDemande || j?.devis?.type || j?.type]
+              : [];
 
           const det = {
             devisNumero: j?.devis?.numero || "",
@@ -347,7 +347,7 @@ export default function DevisList() {
       await fetchInBatches(jobs, 6);
       if (!cancelled) setTick((t) => t + 1);
     })()
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         if (!cancelled) setUpdatingDetails(false);
       });
@@ -372,20 +372,33 @@ export default function DevisList() {
           {err && <p className="text-sm text-red-600">{err}</p>}
 
           <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row">
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full sm:w-[240px] rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-[#0B1E3A] shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none"
-              title="Type de demande"
-            >
-              <option value="all">Tous les types</option>
-              <option value="compression">Compression</option>
-              <option value="torsion">Torsion</option>
-              <option value="traction">Traction</option>
-              <option value="filDresse">Fil dressé coupé</option>
-              <option value="grille">Grille métallique</option>
-              <option value="autre">Autre article</option>
-            </select>
+            <div className="relative w-full sm:w-[240px]">
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="peer appearance-none h-10 w-full rounded-xl border border-gray-300 bg-white
+               pl-3 pr-10 text-sm text-[#0B1E3A] shadow
+               focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none"
+                title="Type de demande"
+              >
+                <option value="all">Tous les types</option>
+                <option value="compression">Compression</option>
+                <option value="torsion">Torsion</option>
+                <option value="traction">Traction</option>
+                <option value="filDresse">Fil dressé coupé</option>
+                <option value="grille">Grille métallique</option>
+                <option value="autre">Autre article</option>
+              </select>
+
+              {/* Icône flèche custom, centrée verticalement */}
+              <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                <FiChevronDown
+                  size={16}
+                  className="text-gray-500 peer-focus:text-[#F7C600]"
+                />
+              </span>
+            </div>
+
 
             <div className="relative w-full sm:w-[520px]">
               <FiSearch

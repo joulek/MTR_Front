@@ -9,23 +9,20 @@ import Pagination from "@/components/Pagination";
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 const CARD_WRAPPER = "mx-auto w-full max-w-6xl px-3 sm:px-6";
 
-// ---------- Helpers mis AVANT utilisation ----------
+// ---------- Helpers ----------
 const DEBUG = typeof window !== "undefined" && process.env.NODE_ENV !== "production";
-const dlog = (...args: any[]) => { if (DEBUG) console.log("[AdminProducts]", ...args); };
+const dlog = (...args) => { if (DEBUG) console.log("[AdminProducts]", ...args); };
 
-// Rend une URL absolue à partir de /uploads/xx.jpg ou garde l’URL http(s) telle quelle
-const buildAbsUrl = (u?: string) =>
+const buildAbsUrl = (u) =>
   !u ? "" : /^https?:\/\//i.test(u) ? u : `${BACKEND.replace(/\/$/, "")}/${String(u).replace(/^\//, "")}`;
 
-// Résout une catégorie (id string ou objet) vers l’objet catégorie de la liste
-const resolveCategory = (cat: any, cats: any[]) => {
+const resolveCategory = (cat, cats) => {
   if (!cat) return null;
   if (typeof cat === "string") return cats.find((c) => c._id === cat) || null;
   return cat;
 };
 
-// Récupère une liste d’images depuis divers champs et les convertit en URLs absolues
-const normalizeImages = (p: any) => {
+const normalizeImages = (p) => {
   const raw = p?.images ?? p?.imageUrls ?? p?.photos ?? [];
   return (Array.isArray(raw) ? raw : [])
     .map((x) => (typeof x === "string" ? buildAbsUrl(x) : buildAbsUrl(x?.url)))
@@ -36,8 +33,8 @@ export default function AdminProductsPage() {
   const t = useTranslations("auth.products");
   const locale = useLocale();
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [query, setQuery] = useState("");
@@ -49,13 +46,13 @@ export default function AdminProductsPage() {
   // Modales
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [deletingName, setDeletingName] = useState("");
   const [submittingDelete, setSubmittingDelete] = useState(false);
 
   // Edition
   const [editMode, setEditMode] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState(null);
 
   // Form
   const [nameFr, setNameFr] = useState("");
@@ -65,23 +62,23 @@ export default function AdminProductsPage() {
   const [category, setCategory] = useState("");
 
   // Uploads
-  const [images, setImages] = useState<FileList | null>(null);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [images, setImages] = useState(null);
+  const [previews, setPreviews] = useState([]);
 
   // Images existantes (édition)
-  const [existingImages, setExistingImages] = useState<string[]>([]);
-  const [removeExistingSet, setRemoveExistingSet] = useState<Set<string>>(new Set());
+  const [existingImages, setExistingImages] = useState([]);
+  const [removeExistingSet, setRemoveExistingSet] = useState(new Set());
   const [replaceAllImages, setReplaceAllImages] = useState(false);
 
   // Lightbox
   const [galleryOpen, setGalleryOpen] = useState(false);
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
   // Description expand/collapse
-  const [expandedDescIds, setExpandedDescIds] = useState<Set<string>>(new Set());
-  const isDescExpanded = (id: string) => expandedDescIds.has(id);
-  const toggleDesc = (id: string) => {
+  const [expandedDescIds, setExpandedDescIds] = useState(new Set());
+  const isDescExpanded = (id) => expandedDescIds.has(id);
+  const toggleDesc = (id) => {
     setExpandedDescIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -104,10 +101,10 @@ export default function AdminProductsPage() {
         const prodList = Array.isArray(prodPayload)
           ? prodPayload
           : Array.isArray(prodPayload?.data)
-          ? prodPayload.data
-          : Array.isArray(prodPayload?.products)
-          ? prodPayload.products
-          : [];
+            ? prodPayload.data
+            : Array.isArray(prodPayload?.products)
+              ? prodPayload.products
+              : [];
         setProducts(prodList);
 
         // Catégories
@@ -116,10 +113,10 @@ export default function AdminProductsPage() {
         const catList = Array.isArray(catPayload)
           ? catPayload
           : Array.isArray(catPayload?.data)
-          ? catPayload.data
-          : Array.isArray(catPayload?.categories)
-          ? catPayload.categories
-          : [];
+            ? catPayload.data
+            : Array.isArray(catPayload?.categories)
+              ? catPayload.categories
+              : [];
         setCategories(catList);
 
         setPage(1);
@@ -132,7 +129,7 @@ export default function AdminProductsPage() {
     })();
   }, []);
 
-  // Filtre (nom FR/EN, description FR/EN/GEN, catégorie)
+  // Filtre
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return products;
@@ -157,7 +154,6 @@ export default function AdminProductsPage() {
     return filteredProducts.slice(start, start + pageSize);
   }, [filteredProducts, page, pageSize]);
 
-  // Clamp + reset
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (page > totalPages) setPage(totalPages);
@@ -165,7 +161,7 @@ export default function AdminProductsPage() {
   useEffect(() => { setPage(1); }, [query]);
 
   // Upload previews
-  const onImagesChange = (fileList: FileList | null) => {
+  const onImagesChange = (fileList) => {
     setImages(fileList);
     previews.forEach((u) => URL.revokeObjectURL(u));
     const urls = fileList ? Array.from(fileList).map((f) => URL.createObjectURL(f)) : [];
@@ -187,15 +183,13 @@ export default function AdminProductsPage() {
   };
   const closeAddEditModal = () => { setIsOpen(false); resetForm(); };
 
-  // Ouvrir ajout
   const openAdd = () => {
     resetForm();
     setEditMode(false);
     setIsOpen(true);
   };
 
-  // Ouvrir édition
-  const openEdit = (p: any) => {
+  const openEdit = (p) => {
     setEditMode(true);
     setEditingId(p._id);
     setNameFr(p.name_fr || "");
@@ -203,7 +197,7 @@ export default function AdminProductsPage() {
     setDescFr(p.description_fr || p.description || "");
     setDescEn(p.description_en || "");
     setCategory(typeof p.category === "string" ? p.category : (p.category?._id || ""));
-    setExistingImages(normalizeImages(p)); // montrer les images existantes
+    setExistingImages(normalizeImages(p));
     setRemoveExistingSet(new Set());
     setReplaceAllImages(false);
     setImages(null);
@@ -213,7 +207,7 @@ export default function AdminProductsPage() {
   };
 
   // Lock scroll + Esc/Arrows
-  const keyHandler = useCallback((e: KeyboardEvent) => {
+  const keyHandler = useCallback((e) => {
     if (e.key === "Escape") {
       if (galleryOpen) setGalleryOpen(false);
       if (isOpen) setIsOpen(false);
@@ -241,7 +235,7 @@ export default function AdminProductsPage() {
   }, [isOpen, deleteOpen, galleryOpen, keyHandler]);
 
   // Submit (Add / Edit)
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -308,7 +302,7 @@ export default function AdminProductsPage() {
   };
 
   // Delete flow
-  function openDeleteModal(p: any) {
+  function openDeleteModal(p) {
     setDeletingId(p._id);
     setDeletingName(p.name_fr || p.name_en || "");
     setDeleteOpen(true);
@@ -339,7 +333,7 @@ export default function AdminProductsPage() {
   };
 
   // Lightbox
-  const openGallery = (imgs: string[] = [], startIndex = 0) => {
+  const openGallery = (imgs = [], startIndex = 0) => {
     if (!imgs || imgs.length === 0) return;
     setGalleryImages(imgs);
     setGalleryIndex(Math.max(0, Math.min(startIndex, imgs.length - 1)));
@@ -348,8 +342,7 @@ export default function AdminProductsPage() {
   const nextImg = () => setGalleryIndex((i) => (i + 1) % galleryImages.length);
   const prevImg = () => setGalleryIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
 
-  // Thumbnails (utilise URLs absolues déjà normalisées)
-  const renderThumbs = (imgs: string[] = []) => {
+  const renderThumbs = (imgs = []) => {
     const shown = imgs.slice(0, 2);
     const extra = imgs.length - shown.length;
     return (
@@ -378,8 +371,7 @@ export default function AdminProductsPage() {
     );
   };
 
-  // Label de catégorie selon locale
-  const catLabel = (cat: any) => {
+  const catLabel = (cat) => {
     const obj = resolveCategory(cat, categories);
     if (!obj) return "-";
     const fr = obj?.translations?.fr;
@@ -387,8 +379,7 @@ export default function AdminProductsPage() {
     return locale === "fr" ? (fr || en || "-") : (en || fr || "-");
   };
 
-  // Carte mobile
-  const MobileCard = ({ p }: { p: any }) => {
+  const MobileCard = ({ p }) => {
     const imgs = normalizeImages(p);
     return (
       <div className="rounded-2xl border border-[#F7C60022] bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,.06)]">
@@ -457,7 +448,7 @@ export default function AdminProductsPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B1E3A]">{t("title")}</h1>
 
           <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row">
-            <div className="relative w/full sm:w-[520px]">
+            <div className="relative w-full sm:w-[520px]">
               <FiSearch aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 value={query}
@@ -501,13 +492,25 @@ export default function AdminProductsPage() {
 
         <div className="mt-4">
           <Pagination
+            /* valeurs */
             page={page}
+            current={page}
+            currentPage={page}
             pageSize={pageSize}
+            perPage={pageSize}
+            itemsPerPage={pageSize}
             total={total}
-            onPageChange={setPage}
-            onPageSizeChange={setPageSize}
+
+            /* handlers — on passe toutes les variantes */
+            onPageChange={(n) => setPage(Number(n))}
+            onChange={(n) => setPage(Number(n))}
+            onPageSizeChange={(s) => setPageSize(Number(s))}
+            onSizeChange={(s) => setPageSize(Number(s))}
+
+            /* options */
             pageSizeOptions={[5, 10, 20, 50]}
           />
+
         </div>
       </div>
 
@@ -524,8 +527,8 @@ export default function AdminProductsPage() {
                     <col className="w-[22%]" />
                     <col className="w-[22%]" />
                     <col className="w-[28%]" />
-                    <col className="w/[18%]" />
-                    <col className="w/[10%]" />
+                    <col className="w-[18%]" />
+                    <col className="w-[10%]" />
                   </colgroup>
 
                   <thead>
@@ -542,7 +545,7 @@ export default function AdminProductsPage() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-100">
-                    {pageItems.map((p, i) => {
+                    {pageItems.map((p) => {
                       const imgs = normalizeImages(p);
                       return (
                         <tr key={p._id} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
@@ -737,7 +740,6 @@ export default function AdminProductsPage() {
                   )}
                 </div>
 
-                {/* Images existantes */}
                 {editMode && !replaceAllImages && existingImages.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {existingImages.map((url, i) => {
@@ -767,7 +769,6 @@ export default function AdminProductsPage() {
                   </div>
                 )}
 
-                {/* Zone d’upload */}
                 <label className="flex flex-col items-center justify-center gap-2 border-2 border-dotted border-[#F7C600] bg-[#FFF7CC] rounded-xl p-4 sm:p-6 cursor-pointer">
                   <span className="text-slate-600 text-sm text-center">
                     {replaceAllImages ? t("form.dropTextReplace") : t("form.dropTextAdd")}

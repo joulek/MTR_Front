@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import Pagination from "@/components/Pagination";
 import { FiSearch, FiXCircle } from "react-icons/fi";
-import MultiDevisModal from "@/components/admin/devis/MultiDevisModal";
+import MultiDevisModal from "@/components/admin/devis/MultiDevisModal.jsx";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 const WRAP = "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8";
@@ -212,6 +212,7 @@ export default function AdmintractionPage() {
             {t("title")}
           </h1>
 
+          {/* Recherche + bouton */}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-[320px] lg:w-[420px]">
               <FiSearch aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -220,8 +221,7 @@ export default function AdmintractionPage() {
                 onChange={(e) => setQ(e.target.value)}
                 placeholder={t("searchPlaceholder")}
                 aria-label={t("searchAria")}
-                className="w-full rounded-xl border border-gray-300 bg-white px-10 pr-9 py-2 text-sm text-[#0B1E3A]
-                           shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
+                className="w-full rounded-xl border border-gray-300 bg-white px-10 pr-9 py-2 text-sm text-[#0B1E3A] shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
               />
               {q && (
                 <button
@@ -250,7 +250,7 @@ export default function AdmintractionPage() {
         )}
       </div>
 
-      {/* Table */}
+      {/* Table / List */}
       <div className={WRAP}>
         {loading ? (
           <div className="space-y-2 animate-pulse">
@@ -262,17 +262,16 @@ export default function AdmintractionPage() {
           <p className="text-gray-500">{t("noData")}</p>
         ) : (
           <>
-            {/* Desktop / tablette */}
-            <div className="hidden sm:block rounded-2xl border border-[#F7C60022] bg-white shadow">
-              {/* pas de scroll horizontal */}
-              <div className="overflow-x-hidden">
-                <table className="w-full table-auto text-[13px] md:text-sm border-separate border-spacing-0">
-                  <thead className="sticky top-0 z-10 bg-white">
+            {/* TABLE >= md */}
+            <div className="hidden md:block">
+              {/* -mx-4 permet d'utiliser toute la largeur sur mobile/tablette quand on scrolle */}
+              <div className="-mx-4 md:mx-0 overflow-x-auto">
+                <table className="min-w-[760px] w-full table-auto text-[13px] lg:text-sm border-separate border-spacing-0">
+                  <thead>
                     <tr>
-                      <th className="p-2.5 text-left align-bottom w-12">
+                      <th className="p-2.5 text-left w-12">
                         <input
                           type="checkbox"
-                          aria-label="Tout sélectionner sur la page"
                           checked={pageItems.length > 0 && pageItems.every((it) => selectedIds.includes(it._id))}
                           onChange={(e) => {
                             const pageIds = pageItems.map((it) => it._id);
@@ -283,29 +282,29 @@ export default function AdmintractionPage() {
                             );
                           }}
                         />
-                        <div className="mt-2 h-px w-full bg-gray-200" />
                       </th>
-
-                      {[t("columns.number"), t("columns.client"), t("columns.date"), t("columns.pdf"), t("columns.attachments")].map((h) => (
-                        <th key={h} className="p-2.5 text-left align-bottom">
-                          <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-600">{h}</div>
-                          <div className="mt-2 h-px w-full bg-gray-200" />
-                        </th>
-                      ))}
+                      <th className="p-2.5 text-left">{t("columns.number")}</th>
+                      <th className="p-2.5 text-left">{t("columns.client")}</th>
+                      {/* date visible dès md */}
+                      <th className="p-2.5 text-left whitespace-nowrap">{t("columns.date")}</th>
+                      {/* PDF visible dès md */}
+                      <th className="p-2.5 text-left whitespace-nowrap">{t("columns.pdf")}</th>
+                      {/* pièces jointes masquées <lg pour gagner de la place */}
+                      <th className="p-2.5 text-left whitespace-nowrap hidden lg:table-cell">
+                        {t("columns.attachments")}
+                      </th>
                     </tr>
                   </thead>
-
-                  <tbody className="text-[#0B1E3A]">
+                  <tbody>
                     {pageItems.map((d) => {
                       const hasPdf = !!d?.hasDemandePdf;
                       const docs = (d?.documents || [])
-                        .map((doc, i) => ({ ...doc, index: doc.index ?? i, filename: cleanFilename(doc.filename) }))
+                        .map((doc, i) => ({ ...doc, index: i, filename: cleanFilename(doc.filename) }))
                         .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
 
                       return (
                         <tr key={d._id} className="odd:bg-slate-50/40 hover:bg-[#0B1E3A]/[0.04] transition-colors">
-                          {/* checkbox */}
-                          <td className="p-2.5 align-top border-b border-gray-200 w-12">
+                          <td className="p-2.5 border-b border-gray-200 w-12">
                             <input
                               type="checkbox"
                               checked={selectedIds.includes(d._id)}
@@ -317,62 +316,47 @@ export default function AdmintractionPage() {
                             />
                           </td>
 
-                          {/* N° */}
-                          <td className="p-2.5 align-top border-b border-gray-200 whitespace-nowrap">
+                          <td className="p-2.5 border-b border-gray-200 whitespace-nowrap">
                             <div className="flex items-center gap-2">
-                              <span className="h-2.5 w-2.5 rounded-full bg-[#F7C600] shrink-0" />
+                              <span className="h-2.5 w-2.5 rounded-full bg-[#F7C600]" />
                               <span className="font-mono">{d.numero}</span>
                             </div>
                           </td>
 
-                          {/* Client */}
-                          <td className="p-2.5 align-top border-b border-gray-200">
-                            <span
-                              className="block truncate max-w-[14rem] lg:max-w-[18rem]"
-                              title={`${d.user?.prenom || ""} ${d.user?.nom || ""}`}
-                            >
+                          <td className="p-2.5 border-b border-gray-200">
+                            <span className="block truncate max-w-[18rem]" title={`${d.user?.prenom || ""} ${d.user?.nom || ""}`}>
                               {d.user?.prenom} {d.user?.nom}
                             </span>
                           </td>
 
-                          {/* Date */}
-                          <td className="p-2.5 align-top border-b border-gray-200 whitespace-nowrap">
+                          <td className="p-2.5 border-b border-gray-200 whitespace-nowrap">
                             {shortDate(d.createdAt)}
                           </td>
 
-                          {/* PDF demande */}
-                          <td className="p-2.5 align-top border-b border-gray-200 whitespace-nowrap">
+                          <td className="p-2.5 border-b border-gray-200 whitespace-nowrap">
                             {hasPdf ? (
-                              <button
-                                onClick={() => viewPdfById(d._id)}
-                                className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-3 py-1 text-[12px] hover:bg-[#0B1E3A]/5"
-                              >
+                              <button onClick={() => viewPdfById(d._id)} className="inline-flex rounded-full border px-3 py-1 text-[12px] hover:bg-[#0B1E3A]/5">
                                 {t("open")}
                               </button>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
+                            ) : <span className="text-gray-400">—</span>}
                           </td>
 
-                          {/* Fichiers joints */}
-                          <td className="p-2.5 align-top border-b border-gray-200">
-                            <div className="flex flex-wrap gap-2">
-                              {docs.length === 0 ? (
-                                <span className="text-gray-400">—</span>
-                              ) : (
-                                docs.map((doc) => (
+                          {/* hidden <lg */}
+                          <td className="p-2.5 border-b border-gray-200 hidden lg:table-cell">
+                            {docs.length === 0 ? <span className="text-gray-400">—</span> : (
+                              <div className="flex flex-wrap gap-2">
+                                {docs.map((doc) => (
                                   <button
                                     key={doc.index}
                                     onClick={() => viewDocByIndex(d._id, doc.index)}
-                                    className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-3 py-1 text-[12px] hover:bg-[#0B1E3A]/5"
+                                    className="inline-flex rounded-full border px-3 py-1 text-[12px] hover:bg-[#0B1E3A]/5"
                                   >
                                     {t("open")}
                                   </button>
-                                ))
-                              )}
-                            </div>
+                                ))}
+                              </div>
+                            )}
                           </td>
-
                         </tr>
                       );
                     })}
@@ -380,78 +364,66 @@ export default function AdmintractionPage() {
                 </table>
               </div>
 
-              <div className="px-3 py-3">
+              <div className="mt-3">
                 <Pagination
                   page={page}
                   pageSize={pageSize}
                   total={total}
-                  onPageChange={setPage}
-                  onPageSizeChange={setPageSize}
+                  onPageChange={(n) => setPage(Number(n))}
+                  onPageSizeChange={(s) => setPageSize(Number(s))}
                   pageSizeOptions={[5, 10, 20, 50]}
                 />
               </div>
             </div>
 
-            {/* Mobile (cartes) */}
-            <div className="sm:hidden divide-y divide-gray-200">
-              <div className="flex justify-end pb-2">
-                <button
-                  disabled={selectedIds.length === 0}
-                  onClick={openMultiFromSelection}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#F7C600] text-[#0B1E3A] px-4 py-2 font-semibold shadow disabled:opacity-50"
-                >
-                  Créer devis (sélection)
-                </button>
-              </div>
-
+            {/* LISTE MOBILE < md */}
+            <div className="md:hidden divide-y divide-gray-200">
               {pageItems.map((d) => {
                 const hasPdf = !!d?.hasDemandePdf;
                 const docs = (d?.documents || [])
-                  .map((doc, idx) => ({ ...doc, index: doc.index ?? idx, filename: cleanFilename(doc.filename) }))
+                  .map((doc, i) => ({ ...doc, index: i, filename: cleanFilename(doc.filename) }))
                   .filter((doc) => doc.filename && (doc.size ?? 0) > 0);
 
                 return (
                   <div key={d._id} className="py-3">
-                    <div className="flex items-center gap-2 text-[#0B1E3A]">
-                      <input
-                        type="checkbox"
-                        className="mr-1"
-                        checked={selectedIds.includes(d._id)}
-                        onChange={(e) =>
-                          setSelectedIds((prev) => (e.target.checked ? [...prev, d._id] : prev.filter((id) => id !== d._id)))
-                        }
-                      />
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#F7C600]" />
-                      <span className="font-mono">{d.numero}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="mt-0.5"
+                          checked={selectedIds.includes(d._id)}
+                          onChange={(e) =>
+                            setSelectedIds((prev) => (e.target.checked ? [...prev, d._id] : prev.filter((id) => id !== d._id)))
+                          }
+                        />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[#F7C600]" />
+                        <span className="font-mono">{d.numero}</span>
+                      </div>
+
+                      {hasPdf ? (
+                        <button
+                          onClick={() => viewPdfById(d._id)}
+                          className="inline-flex rounded-full border px-3 py-1 text-[12px]"
+                        >
+                          {t("open")}
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">—</span>
+                      )}
                     </div>
 
                     <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <p className="text-xs font-semibold text-gray-500">{t("columns.client")}</p>
+                        <p className="text-[11px] font-semibold text-gray-500">{t("columns.client")}</p>
                         <p className="truncate">{d.user?.prenom} {d.user?.nom}</p>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-gray-500">{t("columns.date")}</p>
+                        <p className="text-[11px] font-semibold text-gray-500">{t("columns.date")}</p>
                         <p className="truncate">{shortDate(d.createdAt)}</p>
                       </div>
                     </div>
 
-                    <div className="mt-2 flex flex-wrap items-center gap-4 text-sm">
-                      <div>
-                        <span className="text-xs font-semibold text-gray-500">{t("columns.pdf")}</span>{" "}
-                        {hasPdf ? (
-                          <button
-                            onClick={() => viewPdfById(d._id)}
-                            className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-2 py-0.5 text-[12px] text-[#0B1E3A] hover:bg-[#0B1E3A]/5"
-                          >
-                            {t("open")}
-                          </button>
-                        ) : <span className="text-gray-500">—</span>}
-                      </div>
-
-                    </div>
-
-                    <p className="mt-2 text-xs font-semibold text-gray-500">{t("columns.attachments")}</p>
+                    <p className="mt-2 text-[11px] font-semibold text-gray-500">{t("columns.attachments")}</p>
                     {docs.length === 0 ? (
                       <p className="text-gray-500">—</p>
                     ) : (
@@ -460,7 +432,7 @@ export default function AdmintractionPage() {
                           <button
                             key={doc.index}
                             onClick={() => viewDocByIndex(d._id, doc.index)}
-                            className="inline-flex items-center gap-1 rounded-full border border-[#0B1E3A]/20 px-2 py-0.5 text-[12px] text-[#0B1E3A] hover:bg-[#0B1E3A]/5"
+                            className="inline-flex rounded-full border px-2 py-0.5 text-[12px]"
                           >
                             {t("open")}
                           </button>
@@ -475,48 +447,30 @@ export default function AdmintractionPage() {
                 page={page}
                 pageSize={pageSize}
                 total={total}
-                onPageChange={setPage}
-                onPageSizeChange={setPageSize}
+                onPageChange={(n) => setPage(Number(n))}
+                onPageSizeChange={(s) => setPageSize(Number(s))}
                 pageSizeOptions={[5, 10, 20, 50]}
               />
             </div>
           </>
         )}
       </div>
+
       <MultiDevisModal
         open={multiOpen}
         onClose={() => setMultiOpen(false)}
         demands={multiDemands}
-        onCreated={() => {
-          setMultiOpen(false);
-          setSelectedIds([]);
-          load(); // recharge la liste après création
-        }}
+        onCreated={() => { setMultiOpen(false); setSelectedIds([]); load(); }}
         demandKinds={["traction"]}
         articleKinds={["traction"]}
       />
 
-
-
       {/* Toast */}
       {toast && (
-        <div
-          role="status"
-          className={[
-            "fixed z-50 top-4 right-4 sm:right-6 rounded-xl border px-4 py-2 shadow-lg",
-            toast.kind === "success" && "bg-emerald-50 border-emerald-200 text-emerald-900",
-            toast.kind === "warning" && "bg-amber-50 border-amber-200 text-amber-900",
-            toast.kind === "error" && "bg-red-50 border-red-200 text-red-800",
-            (!toast.kind || toast.kind === "info") && "bg-blue-50 border-blue-200 text-blue-800",
-          ].filter(Boolean).join(" ")}
-        >
+        <div className="fixed z-50 top-4 right-4 rounded-xl border px-4 py-2 shadow-lg bg-blue-50 border-blue-200 text-blue-800">
           <div className="flex items-center gap-3">
             <span className="text-sm">{toast.text}</span>
-            <button
-              onClick={() => setToast(null)}
-              className="ml-1 inline-flex items-center justify-center rounded-md border border-black/10 bg-white/70 px-2 py-0.5 text-xs text-slate-700 hover:bg-white"
-              aria-label="Fermer le message"
-            >
+            <button onClick={() => setToast(null)} className="ml-1 inline-flex rounded-md border px-2 py-0.5 text-xs">
               OK
             </button>
           </div>
