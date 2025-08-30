@@ -7,35 +7,55 @@ import { FiEdit2, FiSearch, FiXCircle, FiPlus, FiTrash2, FiX, FiCheck } from "re
 import Pagination from "@/components/Pagination";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-
-// Même wrapper que Catégories / Articles
 const CARD_WRAPPER = "mx-auto w-full max-w-6xl px-3 sm:px-6";
+
+// ---------- Helpers mis AVANT utilisation ----------
+const DEBUG = typeof window !== "undefined" && process.env.NODE_ENV !== "production";
+const dlog = (...args: any[]) => { if (DEBUG) console.log("[AdminProducts]", ...args); };
+
+// Rend une URL absolue à partir de /uploads/xx.jpg ou garde l’URL http(s) telle quelle
+const buildAbsUrl = (u?: string) =>
+  !u ? "" : /^https?:\/\//i.test(u) ? u : `${BACKEND.replace(/\/$/, "")}/${String(u).replace(/^\//, "")}`;
+
+// Résout une catégorie (id string ou objet) vers l’objet catégorie de la liste
+const resolveCategory = (cat: any, cats: any[]) => {
+  if (!cat) return null;
+  if (typeof cat === "string") return cats.find((c) => c._id === cat) || null;
+  return cat;
+};
+
+// Récupère une liste d’images depuis divers champs et les convertit en URLs absolues
+const normalizeImages = (p: any) => {
+  const raw = p?.images ?? p?.imageUrls ?? p?.photos ?? [];
+  return (Array.isArray(raw) ? raw : [])
+    .map((x) => (typeof x === "string" ? buildAbsUrl(x) : buildAbsUrl(x?.url)))
+    .filter(Boolean);
+};
 
 export default function AdminProductsPage() {
   const t = useTranslations("auth.products");
   const locale = useLocale();
 
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Recherche
   const [query, setQuery] = useState("");
 
-  // ✅ Pagination
+  // Pagination
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   // Modales
   const [isOpen, setIsOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deletingName, setDeletingName] = useState("");
   const [submittingDelete, setSubmittingDelete] = useState(false);
 
-  // Mode édition
+  // Edition
   const [editMode, setEditMode] = useState(false);
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form
   const [nameFr, setNameFr] = useState("");
@@ -44,24 +64,24 @@ export default function AdminProductsPage() {
   const [descEn, setDescEn] = useState("");
   const [category, setCategory] = useState("");
 
-  // Images (nouvelles à uploader)
-  const [images, setImages] = useState(null);
-  const [previews, setPreviews] = useState([]);
+  // Uploads
+  const [images, setImages] = useState<FileList | null>(null);
+  const [previews, setPreviews] = useState<string[]>([]);
 
-  // Images existantes (en édition)
-  const [existingImages, setExistingImages] = useState([]); // array d’URLs
-  const [removeExistingSet, setRemoveExistingSet] = useState(new Set()); // URLs à supprimer
+  // Images existantes (édition)
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [removeExistingSet, setRemoveExistingSet] = useState<Set<string>>(new Set());
   const [replaceAllImages, setReplaceAllImages] = useState(false);
 
   // Lightbox
   const [galleryOpen, setGalleryOpen] = useState(false);
-  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
 
-  // ✅ Description expand/collapse
-  const [expandedDescIds, setExpandedDescIds] = useState(new Set());
-  const isDescExpanded = (id) => expandedDescIds.has(id);
-  const toggleDesc = (id) => {
+  // Description expand/collapse
+  const [expandedDescIds, setExpandedDescIds] = useState<Set<string>>(new Set());
+  const isDescExpanded = (id: string) => expandedDescIds.has(id);
+  const toggleDesc = (id: string) => {
     setExpandedDescIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -70,55 +90,82 @@ export default function AdminProductsPage() {
     });
   };
 
+  dlog("BACKEND =", BACKEND);
+
   // Load data
   useEffect(() => {
     (async () => {
       try {
-        const rp = await fetch(`${BACKEND}/api/produits`, { credentials: "include" });
-        const prodData = rp.ok ? await rp.json().catch(() => []) : [];
-        setProducts(Array.isArray(prodData) ? prodData : prodData?.products ?? []);
+        setLoading(true);
 
+        // Produits
+        const rp = await fetch(`${BACKEND}/api/produits`, { credentials: "include" });
+        const prodPayload = rp.ok ? await rp.json().catch(() => null) : null;
+        const prodList = Array.isArray(prodPayload)
+          ? prodPayload
+          : Array.isArray(prodPayload?.data)
+          ? prodPayload.data
+          : Array.isArray(prodPayload?.products)
+          ? prodPayload.products
+          : [];
+        setProducts(prodList);
+
+        // Catégories
         const rc = await fetch(`${BACKEND}/api/categories`, { credentials: "include" });
-        const catData = rc.ok ? await rc.json().catch(() => []) : [];
-        setCategories(Array.isArray(catData) ? catData : catData?.categories ?? []);
+        const catPayload = rc.ok ? await rc.json().catch(() => null) : null;
+        const catList = Array.isArray(catPayload)
+          ? catPayload
+          : Array.isArray(catPayload?.data)
+          ? catPayload.data
+          : Array.isArray(catPayload?.categories)
+          ? catPayload.categories
+          : [];
+        setCategories(catList);
+
+        setPage(1);
       } catch (err) {
         console.error("❌ Initial fetch error:", err);
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
 
-  // --- Filtrage produits (FR/EN + desc + catégorie) ---
+  // Filtre (nom FR/EN, description FR/EN/GEN, catégorie)
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return products;
+
     return products.filter((p) => {
       const fr = (p?.name_fr || "").toLowerCase();
       const en = (p?.name_en || "").toLowerCase();
-      const dfr = (p?.description_fr || "").toLowerCase();
+      const dfr = (p?.description_fr || p?.description || "").toLowerCase();
       const den = (p?.description_en || "").toLowerCase();
-      const cat = (p?.category?.translations?.fr || p?.category?.label || "").toLowerCase();
-      return fr.includes(q) || en.includes(q) || dfr.includes(q) || den.includes(q) || cat.includes(q);
-    });
-  }, [products, query]);
 
-  // ✅ Pagination locale
+      const catObj = resolveCategory(p?.category, categories);
+      const catTxt = (catObj?.translations?.fr || catObj?.translations?.en || catObj?.label || "").toLowerCase();
+
+      return fr.includes(q) || en.includes(q) || dfr.includes(q) || den.includes(q) || catTxt.includes(q);
+    });
+  }, [products, categories, query]);
+
+  // Pagination locale
   const total = filteredProducts.length;
   const pageItems = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filteredProducts.slice(start, start + pageSize);
   }, [filteredProducts, page, pageSize]);
 
-  // ✅ clamp & reset page quand le filtre change
+  // Clamp + reset
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (page > totalPages) setPage(totalPages);
   }, [total, page, pageSize]);
-  useEffect(() => {
-    setPage(1);
-  }, [query]);
+  useEffect(() => { setPage(1); }, [query]);
 
-  // Previews (nouvelles images)
-  const onImagesChange = (fileList) => {
+  // Upload previews
+  const onImagesChange = (fileList: FileList | null) => {
     setImages(fileList);
     previews.forEach((u) => URL.revokeObjectURL(u));
     const urls = fileList ? Array.from(fileList).map((f) => URL.createObjectURL(f)) : [];
@@ -148,15 +195,15 @@ export default function AdminProductsPage() {
   };
 
   // Ouvrir édition
-  const openEdit = (p) => {
+  const openEdit = (p: any) => {
     setEditMode(true);
     setEditingId(p._id);
     setNameFr(p.name_fr || "");
     setNameEn(p.name_en || "");
-    setDescFr(p.description_fr || "");
+    setDescFr(p.description_fr || p.description || "");
     setDescEn(p.description_en || "");
-    setCategory(p.category?._id || "");
-    setExistingImages(Array.isArray(p.images) ? p.images : []);
+    setCategory(typeof p.category === "string" ? p.category : (p.category?._id || ""));
+    setExistingImages(normalizeImages(p)); // montrer les images existantes
     setRemoveExistingSet(new Set());
     setReplaceAllImages(false);
     setImages(null);
@@ -165,8 +212,8 @@ export default function AdminProductsPage() {
     setIsOpen(true);
   };
 
-  // lock scroll + Esc/Arrows
-  const keyHandler = useCallback((e) => {
+  // Lock scroll + Esc/Arrows
+  const keyHandler = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") {
       if (galleryOpen) setGalleryOpen(false);
       if (isOpen) setIsOpen(false);
@@ -194,7 +241,7 @@ export default function AdminProductsPage() {
   }, [isOpen, deleteOpen, galleryOpen, keyHandler]);
 
   // Submit (Add / Edit)
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -207,13 +254,11 @@ export default function AdminProductsPage() {
 
     if (images) Array.from(images).forEach((img) => fd.append("images", img));
 
-    if (editMode) {
+    if (editMode && editingId) {
       if (replaceAllImages) {
         fd.append("replaceImages", "true");
-      } else {
-        if (removeExistingSet.size > 0) {
-          fd.append("removeImages", JSON.stringify(Array.from(removeExistingSet)));
-        }
+      } else if (removeExistingSet.size > 0) {
+        fd.append("removeImages", JSON.stringify(Array.from(removeExistingSet)));
       }
 
       try {
@@ -239,7 +284,7 @@ export default function AdminProductsPage() {
       return;
     }
 
-    // CRÉATION
+    // Création
     try {
       const res = await fetch(`${BACKEND}/api/produits`, {
         method: "POST",
@@ -263,7 +308,7 @@ export default function AdminProductsPage() {
   };
 
   // Delete flow
-  function openDeleteModal(p) {
+  function openDeleteModal(p: any) {
     setDeletingId(p._id);
     setDeletingName(p.name_fr || p.name_en || "");
     setDeleteOpen(true);
@@ -293,8 +338,8 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Lightbox open
-  const openGallery = (imgs = [], startIndex = 0) => {
+  // Lightbox
+  const openGallery = (imgs: string[] = [], startIndex = 0) => {
     if (!imgs || imgs.length === 0) return;
     setGalleryImages(imgs);
     setGalleryIndex(Math.max(0, Math.min(startIndex, imgs.length - 1)));
@@ -303,8 +348,8 @@ export default function AdminProductsPage() {
   const nextImg = () => setGalleryIndex((i) => (i + 1) % galleryImages.length);
   const prevImg = () => setGalleryIndex((i) => (i - 1 + galleryImages.length) % galleryImages.length);
 
-  // Thumbnails
-  const renderThumbs = (imgs = []) => {
+  // Thumbnails (utilise URLs absolues déjà normalisées)
+  const renderThumbs = (imgs: string[] = []) => {
     const shown = imgs.slice(0, 2);
     const extra = imgs.length - shown.length;
     return (
@@ -320,7 +365,7 @@ export default function AdminProductsPage() {
               title={t("gallery.open")}
               aria-label={t("gallery.open")}
             >
-              <Image src={src} alt={`img-${i}`} fill className="object-cover" sizes="56px" />
+              <Image src={src} alt={`img-${i}`} fill className="object-cover" sizes="56px" unoptimized />
               {showBadge && (
                 <span className="absolute inset-0 bg-black/50 text-white text-xs font-semibold grid place-items-center">
                   +{extra}
@@ -333,86 +378,86 @@ export default function AdminProductsPage() {
     );
   };
 
-  // Helper pour label catégorie selon la locale
-  const catLabel = (cat) => {
-    if (!cat) return "-";
-    const fr = cat?.translations?.fr;
-    const en = cat?.translations?.en || cat?.label;
+  // Label de catégorie selon locale
+  const catLabel = (cat: any) => {
+    const obj = resolveCategory(cat, categories);
+    if (!obj) return "-";
+    const fr = obj?.translations?.fr;
+    const en = obj?.translations?.en || obj?.label;
     return locale === "fr" ? (fr || en || "-") : (en || fr || "-");
   };
 
-  // ---- MOBILE CARD (<= md) ----
-  const MobileCard = ({ p }) => (
-    <div className="rounded-2xl border border-[#F7C60022] bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,.06)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-xs text-slate-500 mb-1">
-            {p.category ? catLabel(p.category) : "-"}
+  // Carte mobile
+  const MobileCard = ({ p }: { p: any }) => {
+    const imgs = normalizeImages(p);
+    return (
+      <div className="rounded-2xl border border-[#F7C60022] bg-white p-4 shadow-[0_4px_16px_rgba(0,0,0,.06)]">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-xs text-slate-500 mb-1">{p.category ? catLabel(p.category) : "-"}</div>
+            <h3 className="text-base font-semibold text-[#0B1E3A]">{p.name_fr || p.name_en || "-"}</h3>
           </div>
-          <h3 className="text-base font-semibold text-[#0B1E3A]">{p.name_fr || p.name_en || "-"}</h3>
-        </div>
-        <div className="shrink-0 flex items-center gap-2">
-          <button
-            onClick={() => openEdit(p)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-yellow-200 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 hover:shadow-sm transition"
-            title={t("actions.edit")}
-            aria-label={t("actions.edit")}
-          >
-            <FiEdit2 size={14} />
-          </button>
-          <button
-            onClick={() => openDeleteModal(p)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm transition"
-            title={t("actions.delete")}
-            aria-label={t("actions.delete")}
-          >
-            <FiTrash2 size={14} />
-          </button>
-        </div>
-      </div>
-
-      {(p.description_fr || p.description_en) && (
-        <div className="relative mt-2">
-          <p
-            onClick={() => toggleDesc(p._id)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleDesc(p._id)}
-            aria-expanded={isDescExpanded(p._id)}
-            title={isDescExpanded(p._id) ? t("actions.collapse") : t("actions.expand")}
-            className={`text-[13px] text-slate-700 cursor-pointer ${isDescExpanded(p._id) ? "line-clamp-none" : "line-clamp-2"}`}
-          >
-            {p.description_fr || p.description_en}
-          </p>
-
-          {!isDescExpanded(p._id) && (
+          <div className="shrink-0 flex items-center gap-2">
             <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); toggleDesc(p._id); }}
-              aria-label={t("actions.expand")}
-              title={t("actions.expand")}
+              onClick={() => openEdit(p)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-yellow-200 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 hover:shadow-sm transition"
+              title={t("actions.edit")}
+              aria-label={t("actions.edit")}
             >
-              …
+              <FiEdit2 size={14} />
             </button>
-          )}
+            <button
+              onClick={() => openDeleteModal(p)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm transition"
+              title={t("actions.delete")}
+              aria-label={t("actions.delete")}
+            >
+              <FiTrash2 size={14} />
+            </button>
+          </div>
         </div>
-      )}
 
-      <div className="mt-3">{renderThumbs(p.images || [])}</div>
-    </div>
-  );
+        {(p.description_fr || p.description_en || p.description) && (
+          <div className="relative mt-2">
+            <p
+              onClick={() => toggleDesc(p._id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleDesc(p._id)}
+              aria-expanded={isDescExpanded(p._id)}
+              title={isDescExpanded(p._id) ? t("actions.collapse") : t("actions.expand")}
+              className={`text-[13px] text-slate-700 cursor-pointer ${isDescExpanded(p._id) ? "line-clamp-none" : "line-clamp-2"}`}
+            >
+              {p.description_fr || p.description_en || p.description}
+            </p>
+
+            {!isDescExpanded(p._id) && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); toggleDesc(p._id); }}
+                aria-label={t("actions.expand")}
+                title={t("actions.expand")}
+              >
+                …
+              </button>
+            )}
+          </div>
+        )}
+
+        <div className="mt-3">{renderThumbs(imgs)}</div>
+      </div>
+    );
+  };
 
   return (
     <div className="py-6 space-y-6 sm:space-y-8">
-      {/* ======= HEADER + recherche ======= */}
+      {/* Header + recherche */}
       <div className={CARD_WRAPPER}>
         <header className="space-y-4 text-center">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B1E3A]">
-            {t("title")}
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B1E3A]">{t("title")}</h1>
 
           <div className="mx-auto flex max-w-3xl flex-col items-center justify-center gap-3 sm:flex-row">
-            <div className="relative w-full sm:w-[520px]">
+            <div className="relative w/full sm:w-[520px]">
               <FiSearch aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 value={query}
@@ -444,7 +489,7 @@ export default function AdminProductsPage() {
         </header>
       </div>
 
-      {/* LISTE MOBILE (cartes) */}
+      {/* Liste mobile */}
       <div className={`${CARD_WRAPPER} md:hidden`}>
         <div className="grid gap-3 sm:gap-4">
           {pageItems.length === 0 ? (
@@ -454,7 +499,6 @@ export default function AdminProductsPage() {
           )}
         </div>
 
-        {/* ✅ Pagination mobile */}
         <div className="mt-4">
           <Pagination
             page={page}
@@ -467,7 +511,7 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* TABLE DESKTOP */}
+      {/* Table desktop */}
       <div className={`${CARD_WRAPPER} hidden md:block`}>
         <div className="rounded-2xl border border-[#F7C60022] bg-white shadow-[0_6px_22px_rgba(0,0,0,.06)]">
           {pageItems.length === 0 ? (
@@ -480,8 +524,8 @@ export default function AdminProductsPage() {
                     <col className="w-[22%]" />
                     <col className="w-[22%]" />
                     <col className="w-[28%]" />
-                    <col className="w-[18%]" />
-                    <col className="w-[10%]" />
+                    <col className="w/[18%]" />
+                    <col className="w/[10%]" />
                   </colgroup>
 
                   <thead>
@@ -498,78 +542,80 @@ export default function AdminProductsPage() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-100">
-                    {pageItems.map((p) => (
-                      <tr key={p._id} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
-                        <td className="p-3 align-top">
-                          <span className="inline-flex items-center gap-2 text-[#0B1E3A]">
-                            <span className="h-2 w-2 rounded-full bg-[#F7C600] shrink-0" />
-                            <span className="leading-tight">{p.category ? catLabel(p.category) : "-"}</span>
-                          </span>
-                        </td>
+                    {pageItems.map((p, i) => {
+                      const imgs = normalizeImages(p);
+                      return (
+                        <tr key={p._id} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
+                          <td className="p-3 align-top">
+                            <span className="inline-flex items-center gap-2 text-[#0B1E3A]">
+                              <span className="h-2 w-2 rounded-full bg-[#F7C600] shrink-0" />
+                              <span className="leading-tight">{p.category ? catLabel(p.category) : "-"}</span>
+                            </span>
+                          </td>
 
-                        <td className="p-3 align-top">
-                          <div className="text-[#0B1E3A] font-medium truncate max-w-[220px]">{p.name_fr || p.name_en || "-"}</div>
-                        </td>
+                          <td className="p-3 align-top">
+                            <div className="text-[#0B1E3A] font-medium truncate max-w-[220px]">{p.name_fr || p.name_en || "-"}</div>
+                          </td>
 
-                        {/* ====== DESCRIPTION : cliquable + bouton "…" ====== */}
-                        <td className="p-3 align-top">
-                          <div className="relative max-w-[360px] group">
-                            <p
-                              onClick={() => toggleDesc(p._id)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleDesc(p._id)}
-                              aria-expanded={isDescExpanded(p._id)}
-                              title={isDescExpanded(p._id) ? t("actions.collapse") : t("actions.expand")}
-                              className={`text-sm text-slate-700 cursor-pointer select-text ${isDescExpanded(p._id) ? "line-clamp-none" : "line-clamp-2"}`}
-                            >
-                              {p.description_fr || p.description_en || "-"}
-                            </p>
-
-                            {!isDescExpanded(p._id) && (p.description_fr || p.description_en) && (
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); toggleDesc(p._id); }}
-                                aria-label={t("actions.expand")}
-                                title={t("actions.expand")}
+                          <td className="p-3 align-top">
+                            <div className="relative max-w-[360px] group">
+                              <p
+                                onClick={() => toggleDesc(p._id)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && toggleDesc(p._id)}
+                                aria-expanded={isDescExpanded(p._id)}
+                                title={isDescExpanded(p._id) ? t("actions.collapse") : t("actions.expand")}
+                                className={`text-sm text-slate-700 cursor-pointer select-text ${isDescExpanded(p._id) ? "line-clamp-none" : "line-clamp-2"}`}
                               >
-                                …
+                                {p.description_fr || p.description_en || p.description || "-"}
+                              </p>
+
+                              {!isDescExpanded(p._id) && (p.description_fr || p.description_en || p.description) && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); toggleDesc(p._id); }}
+                                  aria-label={t("actions.expand")}
+                                  title={t("actions.expand")}
+                                >
+                                  …
+                                </button>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="p-3 align-top">
+                            <div className="max-w-[140px]">{renderThumbs(imgs)}</div>
+                          </td>
+
+                          <td className="p-3 align-top">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => openEdit(p)}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-yellow-200 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 hover:shadow-sm transition"
+                                title={t("actions.edit")}
+                                aria-label={t("actions.edit")}
+                              >
+                                <FiEdit2 size={14} />
                               </button>
-                            )}
-                          </div>
-                        </td>
 
-                        <td className="p-3 align-top">
-                          <div className="max-w-[140px]">{renderThumbs(p.images || [])}</div>
-                        </td>
-                        <td className="p-3 align-top">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => openEdit(p)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-yellow-200 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 hover:shadow-sm transition"
-                              title={t("actions.edit")}
-                              aria-label={t("actions.edit")}
-                            >
-                              <FiEdit2 size={14} />
-                            </button>
-
-                            <button
-                              onClick={() => openDeleteModal(p)}
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm transition"
-                              title={t("actions.delete")}
-                              aria-label={t("actions.delete")}
-                            >
-                              <FiTrash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              <button
+                                onClick={() => openDeleteModal(p)}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm transition"
+                                title={t("actions.delete")}
+                                aria-label={t("actions.delete")}
+                              >
+                                <FiTrash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
 
-              {/* ✅ Pagination desktop */}
               <div className="px-4 pb-5">
                 <Pagination
                   page={page}
@@ -585,7 +631,7 @@ export default function AdminProductsPage() {
         </div>
       </div>
 
-      {/* ===== MODALE AJOUT / ÉDITION PRODUIT ===== */}
+      {/* Modale Ajout / Édition */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="add-edit-title">
           <div className="relative w-full max-w-sm sm:max-w-2xl mt-12 rounded-3xl bg-white shadow-[0_25px_80px_rgba(0,0,0,.25)] ring-1 ring-gray-100">
@@ -668,12 +714,7 @@ export default function AdminProductsPage() {
                       </option>
                     ))}
                   </select>
-
-                  {/* chevron */}
-                  <svg
-                    className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0B1E3A] opacity-70"
-                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"
-                  >
+                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#0B1E3A] opacity-70" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -696,7 +737,7 @@ export default function AdminProductsPage() {
                   )}
                 </div>
 
-                {/* Images existantes (édition) */}
+                {/* Images existantes */}
                 {editMode && !replaceAllImages && existingImages.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {existingImages.map((url, i) => {
@@ -726,7 +767,7 @@ export default function AdminProductsPage() {
                   </div>
                 )}
 
-                {/* Zone d’upload (ajout ou remplacement) */}
+                {/* Zone d’upload */}
                 <label className="flex flex-col items-center justify-center gap-2 border-2 border-dotted border-[#F7C600] bg-[#FFF7CC] rounded-xl p-4 sm:p-6 cursor-pointer">
                   <span className="text-slate-600 text-sm text-center">
                     {replaceAllImages ? t("form.dropTextReplace") : t("form.dropTextAdd")}
@@ -766,7 +807,7 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* ===== MODALE SUPPRESSION ===== */}
+      {/* Modale suppression */}
       {deleteOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="delete-title">
           <div className="relative w-full max-w-sm sm:max-w-md mt-16 rounded-3xl bg-white shadow-[0_25px_80px_rgba(0,0,0,.25)] ring-1 ring-gray-100">
@@ -775,12 +816,8 @@ export default function AdminProductsPage() {
             </div>
 
             <div className="px-4 sm:px-6 pt-10 pb-4 border-b border-gray-100 text-center">
-              <h3 id="delete-title" className="text-lg sm:text-xl font-semibold text-[#0B1E3A]">
-                {t("delete.title")}
-              </h3>
-              {deletingName && (
-                <p className="mt-1 text-xs text-gray-500 font-mono truncate">« {deletingName} »</p>
-              )}
+              <h3 id="delete-title" className="text-lg sm:text-xl font-semibold text-[#0B1E3A]">{t("delete.title")}</h3>
+              {deletingName && <p className="mt-1 text-xs text-gray-500 font-mono truncate">« {deletingName} »</p>}
             </div>
 
             <div className="px-4 sm:px-6 py-5 text-sm text-gray-700">
@@ -807,7 +844,7 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {/* ===== MODALE GALERIE ===== */}
+      {/* Lightbox */}
       {galleryOpen && (
         <div
           className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
@@ -831,6 +868,7 @@ export default function AdminProductsPage() {
                 className="object-contain select-none"
                 sizes="100vw"
                 priority
+                unoptimized
               />
             </div>
             <button onClick={prevImg} className="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-white/90 hover:bg-white text-[#0B1E3A] shadow grid place-items-center" aria-label={t("gallery.prev")} title="←">‹</button>
