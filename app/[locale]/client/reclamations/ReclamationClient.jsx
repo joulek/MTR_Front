@@ -43,9 +43,16 @@ const fromISO = (s) => {
   if (!s) return null;
   const [y, m, d] = s.split("-").map((x) => parseInt(x, 10));
   if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d);
+  return new Date(y, m - 1, d); // local time
 };
 const formatFR = (d) => (d ? d.toLocaleDateString("fr-FR") : "");
+const norm = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()); // 00:00 local
+const clampISOToToday = (iso) => {
+  const v = fromISO(iso);
+  if (!v) return iso;
+  const today = norm(new Date());
+  return norm(v) > today ? toISO(today) : toISO(v);
+};
 
 /* ── UI atoms ── */
 const RequiredMark = () => <span className="text-red-500" aria-hidden="true"> *</span>;
@@ -79,16 +86,7 @@ function Alert({ type = "info", message }) {
 }
 
 /* Inputs contrôlés */
-function Input({
-  label,
-  name,
-  required,
-  type = "text",
-  min,
-  placeholder,
-  value,
-  onChange,
-}) {
+function Input({ label, name, required, type = "text", min, placeholder, value, onChange }) {
   return (
     <div className="space-y-1">
       {label && (
@@ -113,15 +111,7 @@ function Input({
   );
 }
 
-function SelectBase({
-  label,
-  name,
-  value,
-  onChange,
-  options = [],
-  required,
-  placeholder = "Sélectionnez…",
-}) {
+function SelectBase({ label, name, value, onChange, options = [], required, placeholder = "Sélectionnez…" }) {
   return (
     <div className="space-y-1 w-full">
       {label && (
@@ -149,9 +139,7 @@ function SelectBase({
           backgroundSize: "0.9rem 0.9rem",
         }}
       >
-        <option value="" style={{ color: "#64748b" }}>
-          {placeholder}
-        </option>
+        <option value="" style={{ color: "#64748b" }}>{placeholder}</option>
         {options.map((o) => (
           <option key={o.value} value={o.value} style={{ color: "#002147" }}>
             {o.label}
@@ -162,15 +150,25 @@ function SelectBase({
   );
 }
 
-/* ── Date picker compact ── */
-function PrettyDatePicker({ label, value, onChange, name, required }) {
+/* ── Date picker compact (jours > aujourd’hui inactifs + clamp auto) ── */
+function PrettyDatePicker({ label, value, onChange, name, required, maxDate }) {
   const [open, setOpen] = useState(false);
+
+  const today = norm(new Date());
+  const maxD = maxDate ? norm(maxDate) : today;
+
+  // clamp automatique si value > aujourd’hui (ex: valeur forcée)
+  useEffect(() => {
+    if (!value) return;
+    const v = fromISO(value);
+    if (v && norm(v) > maxD) onChange(toISO(maxD));
+  }, [value, maxD, onChange]);
+
   const selected = fromISO(value);
+
   const [month, setMonth] = useState(
-    () =>
-      (selected
-        ? new Date(selected.getFullYear(), selected.getMonth(), 1)
-        : new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+    () => (selected ? new Date(selected.getFullYear(), selected.getMonth(), 1)
+                    : new Date(new Date().getFullYear(), new Date().getMonth(), 1))
   );
   const wrapRef = useRef(null);
 
@@ -183,6 +181,7 @@ function PrettyDatePicker({ label, value, onChange, name, required }) {
   const daysShort = ["lu", "ma", "me", "je", "ve", "sa", "di"];
   const monthLabel = month.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
+  // grille (lundi -> dimanche)
   const start = (() => {
     const d = new Date(month);
     const wd = (d.getDay() + 6) % 7; // lundi=0
@@ -198,12 +197,15 @@ function PrettyDatePicker({ label, value, onChange, name, required }) {
   const isSameDay = (a, b) =>
     a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
+  // pas de navigation après le mois de maxDate
+  const maxMonth = new Date(maxD.getFullYear(), maxD.getMonth(), 1);
+  const canGoNext = month < maxMonth;
+
   return (
     <div className="space-y-1" ref={wrapRef}>
       {label && (
         <label className="block text-sm font-medium text-[#002147]">
-          {label}
-          {required && <RequiredMark />}
+          {label}{required && <RequiredMark />}
         </label>
       )}
 
@@ -232,11 +234,16 @@ function PrettyDatePicker({ label, value, onChange, name, required }) {
               className="rounded-md px-1.5 py-0.5 text-sm hover:bg-gray-100"
               aria-label="Mois précédent"
             >‹</button>
+
             <div className="font-semibold text-sm text-[#002147] capitalize">{monthLabel}</div>
+
             <button
               type="button"
-              onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
-              className="rounded-md px-1.5 py-0.5 text-sm hover:bg-gray-100"
+              disabled={!canGoNext}
+              onClick={() => canGoNext && setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+              className={`rounded-md px-1.5 py-0.5 text-sm ${
+                canGoNext ? "hover:bg-gray-100" : "opacity-40 cursor-not-allowed pointer-events-none"
+              }`}
               aria-label="Mois suivant"
             >›</button>
           </div>
@@ -250,15 +257,37 @@ function PrettyDatePicker({ label, value, onChange, name, required }) {
               const inMonth = d.getMonth() === month.getMonth();
               const isToday = isSameDay(d, new Date());
               const isSelected = selected && isSameDay(d, selected);
+              const isFuture = norm(d) > maxD; // futur => inerte
+
+              const baseDayCls = `py-1 rounded-md text-xs ${inMonth ? "text-[#002147]" : "text-gray-400"}`;
+
+              // Jours futurs : élément inerte (pas de bouton)
+              if (isFuture) {
+                return (
+                  <div
+                    key={i}
+                    aria-disabled="true"
+                    tabIndex={-1}
+                    className={`${baseDayCls} opacity-40 cursor-not-allowed pointer-events-none`}
+                  >
+                    {d.getDate()}
+                  </div>
+                );
+              }
+
+              // Jours valides : clamp au clic par sécurité
               return (
                 <button
                   key={i}
                   type="button"
-                  onClick={() => { onChange(toISO(d)); setOpen(false); }}
-                  className={`py-1 rounded-md text-xs
-                    ${inMonth ? "text-[#002147]" : "text-gray-400"}
-                    ${isSelected ? "bg-[#002147] text-white" : "hover:bg-gray-100"}
-                    ${isToday && !isSelected ? "ring-1 ring-[#002147]/40" : ""}`}
+                  onClick={() => {
+                    const pickedISO = toISO(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+                    onChange(clampISOToToday(pickedISO));
+                    setOpen(false);
+                  }}
+                  className={`${baseDayCls} ${
+                    isSelected ? "bg-[#002147] text-white" : "hover:bg-gray-100"
+                  } ${isToday && !isSelected ? "ring-1 ring-[#002147]/40" : ""}`}
                 >
                   {d.getDate()}
                 </button>
@@ -267,17 +296,13 @@ function PrettyDatePicker({ label, value, onChange, name, required }) {
           </div>
 
           <div className="mt-1 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => { onChange(""); setOpen(false); }}
-              className="text-xs text-gray-600 hover:text-gray-800"
-            >
+            <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="text-xs text-gray-600 hover:text-gray-800">
               Effacer
             </button>
             <button
               type="button"
               onClick={() => {
-                const t = new Date();
+                const t = norm(new Date());
                 onChange(toISO(t));
                 setMonth(new Date(t.getFullYear(), t.getMonth(), 1));
                 setOpen(false);
@@ -332,13 +357,19 @@ export default function ReclamationClient() {
     attente: "remplacement",
     attenteAutre: "",
   });
+
   const setField = (name, value) => setForm((f) => ({ ...f, [name]: value }));
+
+  // onChange générique + clamp si c’est la date
   const onChange = (e) => {
     const { name, value } = e.target;
-    setField(name, value);
+    if (name === "dateLivraison") {
+      setField(name, clampISOToToday(value));
+    } else {
+      setField(name, value);
+    }
   };
 
-  /* Efface l’avertissement si un numéro est saisi */
   useEffect(() => {
     if (message.startsWith("⚠️") && form.numero.trim()) setMessage("");
   }, [form.numero, message]);
@@ -382,6 +413,15 @@ export default function ReclamationClient() {
     if (form.nature === "autre" && !form.natureAutre.trim()) { setMessage("⚠️ Précisez la nature de la réclamation."); return; }
     if (form.attente === "autre" && !form.attenteAutre.trim()) { setMessage("⚠️ Précisez votre attente."); return; }
 
+    // Double sécurité : refuse une date future
+    if (form.dateLivraison) {
+      const dl = fromISO(form.dateLivraison);
+      if (norm(dl) > norm(new Date())) {
+        setMessage("⚠️ La date de livraison ne peut pas être dans le futur.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const piecesJointes = await Promise.all(
@@ -404,7 +444,8 @@ export default function ReclamationClient() {
         commande: {
           typeDoc: form.typeDoc,
           numero: form.numero.trim(),
-          dateLivraison: form.dateLivraison ? new Date(form.dateLivraison) : undefined,
+          // garder en local time pour éviter les décalages
+          dateLivraison: form.dateLivraison ? fromISO(form.dateLivraison) : undefined,
           referenceProduit: form.referenceProduit || undefined,
           quantite: form.quantite ? Number(form.quantite) : undefined,
         },
@@ -454,102 +495,47 @@ export default function ReclamationClient() {
           Passer une réclamation
         </h1>
         <p className="mt-1.5 text-sm text-gray-600">
-          Merci de préciser votre document et le motif. Vous pouvez joindre des photos ou un PDF.
+          Merci de préciser votre document et le motif. Vous pouvez joindre des photos
+          ou un PDF.
         </p>
       </div>
 
-      {/* Carte blanche derrière les champs */}
+      {/* Carte blanche */}
       <div className="rounded-2xl bg-white shadow-[0_8px_24px_rgba(0,0,0,.06)] border border-gray-100 p-4 md:p-6">
-        {/* ⬇️ ALERTES ENLEVÉES (non connecté / non client) */}
-
         <form onSubmit={handleSubmit} className="mt-0">
           <SectionTitle>Informations document</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-            <SelectBase
-              name="typeDoc"
-              value={form.typeDoc}
-              onChange={onChange}
-              label="Type de document"
-              required
-              options={TYPE_DOCS}
-            />
-            <Input
-              name="numero"
-              label="N° document"
-              required
-              placeholder="ex: DV2500016"
-              value={form.numero}
-              onChange={onChange}
-            />
+            <SelectBase name="typeDoc" value={form.typeDoc} onChange={onChange} label="Type de document" required options={TYPE_DOCS} />
+            <Input name="numero" label="N° document" required placeholder="ex: DV2500016" value={form.numero} onChange={onChange} />
 
             <PrettyDatePicker
               label="Date de livraison"
               name="dateLivraison"
               value={form.dateLivraison}
-              onChange={(val) => setField("dateLivraison", val)}
+              onChange={(val) => setField("dateLivraison", clampISOToToday(val))}
+              maxDate={new Date()} // ← bloque demain et au-delà
             />
 
-            <Input
-              name="referenceProduit"
-              label="Référence produit"
-              placeholder="ex: ART-001"
-              value={form.referenceProduit}
-              onChange={onChange}
-            />
-            <Input
-              type="number"
-              min="0"
-              name="quantite"
-              label="Quantité"
-              placeholder="ex: 10"
-              value={form.quantite}
-              onChange={onChange}
-            />
+            <Input name="referenceProduit" label="Référence produit" placeholder="ex: ART-001" value={form.referenceProduit} onChange={onChange} />
+            <Input type="number" min="0" name="quantite" label="Quantité" placeholder="ex: 10" value={form.quantite} onChange={onChange} />
           </div>
 
           <SectionTitle>Réclamation</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
-            <SelectBase
-              name="nature"
-              value={form.nature}
-              onChange={onChange}
-              label="Nature de la réclamation"
-              required
-              options={NATURES}
-            />
+            <SelectBase name="nature" value={form.nature} onChange={onChange} label="Nature de la réclamation" required options={NATURES} />
             {form.nature === "autre" && (
-              <Input
-                name="natureAutre"
-                label="Précisez la nature"
-                required
-                value={form.natureAutre}
-                onChange={onChange}
-              />
+              <Input name="natureAutre" label="Précisez la nature" required value={form.natureAutre} onChange={onChange} />
             )}
 
-            <SelectBase
-              name="attente"
-              value={form.attente}
-              onChange={onChange}
-              label="Votre attente"
-              required
-              options={ATTENTES}
-            />
+            <SelectBase name="attente" value={form.attente} onChange={onChange} label="Votre attente" required options={ATTENTES} />
             {form.attente === "autre" && (
-              <Input
-                name="attenteAutre"
-                label="Précisez votre attente"
-                required
-                value={form.attenteAutre}
-                onChange={onChange}
-              />
+              <Input name="attenteAutre" label="Précisez votre attente" required value={form.attenteAutre} onChange={onChange} />
             )}
           </div>
 
           <SectionTitle>Pièces jointes</SectionTitle>
           <p className="text-xs text-gray-500 mb-2">Formats : images ou PDF.</p>
 
-          {/* Dropzone compacte */}
           <label
             htmlFor="files"
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -576,24 +562,12 @@ export default function ReclamationClient() {
                 </p>
               </div>
             )}
-            <input
-              id="files"
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              className="hidden"
-              onChange={(e) => handleFileList(e.target.files)}
-            />
+            <input id="files" ref={fileInputRef} type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={(e) => handleFileList(e.target.files)} />
           </label>
 
-          {/* Zone messages (succès/erreur/validation) */}
           <div ref={alertRef} aria-live="polite" className="mt-4">
             {message && (
-              <Alert
-                type={message.startsWith("✅") ? "success" : message.startsWith("⚠️") ? "info" : "error"}
-                message={message}
-              />
+              <Alert type={message.startsWith("✅") ? "success" : message.startsWith("⚠️") ? "info" : "error"} message={message} />
             )}
           </div>
 

@@ -16,7 +16,7 @@ import Pagination from "@/components/Pagination";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
-function imgSrc(u?: string) {
+function imgSrc(u) {
   if (!u) return "";
   if (/^https?:\/\//i.test(u)) return u;
   const backend = (BACKEND || "").replace(/\/$/, "");
@@ -27,7 +27,7 @@ function imgSrc(u?: string) {
 export default function AdminCategoriesPage() {
   const locale = useLocale();
   const t = useTranslations("auth.categories");
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -48,17 +48,17 @@ export default function AdminCategoriesPage() {
   const [newEN, setNewEN] = useState("");
   const [newAltFR, setNewAltFR] = useState("");
   const [newAltEN, setNewAltEN] = useState("");
-  const [newFile, setNewFile] = useState<File | null>(null);
-  const [newPreview, setNewPreview] = useState<string>("");
+  const [newFile, setNewFile] = useState(null);
+  const [newPreview, setNewPreview] = useState("");
 
   // Edit/Delete
-  const [currentId, setCurrentId] = useState<string | null>(null);
+  const [currentId, setCurrentId] = useState(null);
   const [draftFR, setDraftFR] = useState("");
   const [draftEN, setDraftEN] = useState("");
   const [draftAltFR, setDraftAltFR] = useState("");
   const [draftAltEN, setDraftAltEN] = useState("");
-  const [editFile, setEditFile] = useState<File | null>(null);
-  const [editPreview, setEditPreview] = useState<string>("");
+  const [editFile, setEditFile] = useState(null);
+  const [editPreview, setEditPreview] = useState("");
   const [removeImage, setRemoveImage] = useState(false);
 
   // Busy
@@ -79,7 +79,7 @@ export default function AdminCategoriesPage() {
       if (!res.ok) throw new Error(data?.message || t("errorLoad"));
       setItems(data.categories || []);
       setPage(1);
-    } catch (e: any) {
+    } catch (e) {
       setError(e?.message || t("errorServer"));
     } finally {
       setLoading(false);
@@ -88,7 +88,6 @@ export default function AdminCategoriesPage() {
 
   useEffect(() => {
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ----- Add -----
@@ -110,7 +109,7 @@ export default function AdminCategoriesPage() {
     setNewFile(null);
     setNewPreview("");
   }
-  function onPickNewFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPickNewFile(e) {
     const f = e.target.files?.[0] || null;
     setNewFile(f);
     setNewPreview(f ? URL.createObjectURL(f) : "");
@@ -136,14 +135,14 @@ export default function AdminCategoriesPage() {
       const res = await fetch(`${BACKEND}/api/categories`, {
         method: "POST",
         credentials: "include",
-        body: fd, // pas d'en-tête Content-Type ici
+        body: fd,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || t("errorCreate"));
       setItems((prev) => [data.category, ...prev]);
       closeAddModal();
       setPage(1);
-    } catch (e: any) {
+    } catch (e) {
       setError(e?.message || t("errorServer"));
     } finally {
       setSubmitting(false);
@@ -151,7 +150,7 @@ export default function AdminCategoriesPage() {
   }
 
   // ----- Edit -----
-  function openEditModal(cat: any) {
+  function openEditModal(cat) {
     setCurrentId(cat._id);
     const fr = (cat?.translations?.fr || cat?.label || "").trim();
     const en = (cat?.translations?.en || "").trim();
@@ -175,7 +174,7 @@ export default function AdminCategoriesPage() {
     setEditPreview("");
     setRemoveImage(false);
   }
-  function onPickEditFile(e: React.ChangeEvent<HTMLInputElement>) {
+  function onPickEditFile(e) {
     const f = e.target.files?.[0] || null;
     setEditFile(f);
     setEditPreview(f ? URL.createObjectURL(f) : "");
@@ -210,7 +209,7 @@ export default function AdminCategoriesPage() {
       if (!res.ok) throw new Error(data?.message || t("errorUpdate"));
       setItems((prev) => prev.map((c) => (c._id === currentId ? data.category : c)));
       closeEditModal();
-    } catch (e: any) {
+    } catch (e) {
       setError(e?.message || t("errorServer"));
     } finally {
       setSubmitting(false);
@@ -218,7 +217,7 @@ export default function AdminCategoriesPage() {
   }
 
   // ----- Delete -----
-  function openDeleteModal(cat: any) {
+  function openDeleteModal(cat) {
     setCurrentId(cat._id);
     setDeleteOpen(true);
   }
@@ -238,7 +237,7 @@ export default function AdminCategoriesPage() {
       if (!res.ok) throw new Error(data?.message || t("errorDelete"));
       setItems((prev) => prev.filter((c) => c._id !== currentId));
       closeDeleteModal();
-    } catch (e: any) {
+    } catch (e) {
       setError(e?.message || t("errorServer"));
     } finally {
       setSubmitting(false);
@@ -259,7 +258,7 @@ export default function AdminCategoriesPage() {
         en.includes(q) ||
         altfr.includes(q) ||
         alten.includes(q) ||
-        c._id.toLowerCase().includes(q)
+        (c?._id || "").toLowerCase().includes(q)
       );
     });
   }, [items, query]);
@@ -275,6 +274,7 @@ export default function AdminCategoriesPage() {
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     if (page > totalPages) setPage(totalPages);
   }, [total, page, pageSize]);
+
   useEffect(() => {
     setPage(1);
   }, [query]);
@@ -392,7 +392,6 @@ export default function AdminCategoriesPage() {
                           >
                             <td className="p-4 align-middle">
                               <div className="flex items-center gap-3">
-                                {/* ● le point jaune ici */}
                                 <span className="h-2 w-2 rounded-full bg-[#F7C600]" />
                                 {url ? (
                                   <img
@@ -410,7 +409,6 @@ export default function AdminCategoriesPage() {
 
                             <td className="p-4 align-middle">
                               <div className="flex items-center gap-3">
-                                {/* on enlève le petit point jaune bruyant */}
                                 <span className="text-[#0B1E3A] font-medium">
                                   {fr}
                                 </span>
@@ -457,7 +455,7 @@ export default function AdminCategoriesPage() {
                   const fr = c?.translations?.fr || c?.label || "";
                   const en = c?.translations?.en || "";
                   const urlRaw =
-                    typeof c.image === "string" ? c.image : (c?.image?.url || "");
+                    typeof c?.image === "string" ? c.image : (c?.image?.url || "");
                   const url = imgSrc(urlRaw);
                   return (
                     <div
@@ -588,7 +586,7 @@ export default function AdminCategoriesPage() {
                 </div>
               </label>
 
-              {/* Image + ALT (texte cliquable, preview sous le cadre) */}
+              {/* Image + ALT */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block sm:col-span-2">
                   <span className="block text-sm font-medium text-gray-700 mb-1">
@@ -610,7 +608,7 @@ export default function AdminCategoriesPage() {
                     />
                   </div>
 
-                  {/* Aperçu SOUS le cadre */}
+                  {/* Aperçu */}
                   {newPreview && (
                     <div className="mt-3 relative inline-block">
                       <img
@@ -738,7 +736,7 @@ export default function AdminCategoriesPage() {
                 </div>
               </label>
 
-              {/* Image + ALT (texte cliquable, preview SOUS le cadre) */}
+              {/* Image + ALT */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="block sm:col-span-2">
                   <span className="block text-sm font-medium text-gray-700 mb-1">
@@ -760,7 +758,7 @@ export default function AdminCategoriesPage() {
                     />
                   </div>
 
-                  {/* Aperçu SOUS le cadre */}
+                  {/* Aperçu */}
                   {editPreview && (
                     <div className="mt-3 relative inline-block">
                       <img
