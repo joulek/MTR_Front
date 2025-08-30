@@ -300,7 +300,7 @@ export default function HomeMTR() {
           >
             <motion.div className="md:col-span-2" variants={vItemUp}>
               <div className="sticky top-24">
-                <AutoCarousel images={["/about.jpg", "/photo_home.jpg", "/hero.jpg"]} />
+                <AutoCarousel images={["/soc1.png", "/soc2.png"]} />
                 <div className="mt-6 grid grid-cols-3 gap-3">
                   <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white py-3 ">
                     <div className="text-2xl font-extrabold text-[#0B2239]">{yearsExp}</div>
