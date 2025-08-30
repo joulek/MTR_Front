@@ -18,7 +18,6 @@ type PieceJointe = { filename?: string; mimetype?: string };
 type Row = {
   _id: string;
   client?: string;
-  email?: string;
   typeDoc?: string;
   numero?: string | number;
   date?: string;
@@ -74,7 +73,6 @@ export default function AdminReclamationsPage() {
       const hasPdf = r.pdf ? "pdf oui true disponible" : "pdf non false indisponible";
       return (
         contains(r.client) ||
-        contains(r.email) ||
         contains(r.typeDoc?.replace("_", " ")) ||
         contains(r.numero) ||
         contains(dateStr) ||
@@ -166,7 +164,7 @@ export default function AdminReclamationsPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Rechercher (client, email, type doc, n°, date, PDF, pièces jointes...)"
+            placeholder="Rechercher (client, type doc, n°, date, PDF, pièces jointes...)"
             className="w-full rounded-xl border border-gray-300 bg-white pl-9 pr-9 py-2 text-sm text-[#0B1E3A]
                        shadow focus:border-[#F7C600] focus:ring-2 focus:ring-[#F7C600]/30 outline-none transition"
             aria-label="Rechercher une réclamation"
@@ -202,17 +200,17 @@ export default function AdminReclamationsPage() {
                 className="rounded-2xl border border-gray-200 bg-white shadow-sm p-4 flex flex-col gap-3"
               >
                 <div className="flex items-start justify-between gap-3">
+                  <div className="text-right">
+                    <p className="text-[11px] uppercase tracking-wide text-slate-500">N°</p>
+                    <p className="font-medium tabular-nums">{r.numero || "—"}</p>
+                  </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-400 shrink-0" />
                       <p className="text-[#0B1E3A] font-semibold truncate">{r.client || "—"}</p>
                     </div>
-                    <p className="text-gray-600 text-xs break-words">{r.email || "—"}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[11px] uppercase tracking-wide text-slate-500">N°</p>
-                    <p className="font-medium tabular-nums">{r.numero || "—"}</p>
-                  </div>
+                  
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -269,18 +267,16 @@ export default function AdminReclamationsPage() {
               <table className="min-w-[820px] w-full text-sm">
                 <thead className="bg-white">
                   <tr>
+                     <th className="p-4 text-left">
+                      <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">N°</div>
+                    </th>
                     <th className="p-4 text-left">
                       <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">Client</div>
                     </th>
                     <th className="p-4 text-left">
-                      <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">Email</div>
-                    </th>
-                    <th className="p-4 text-left">
                       <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">Type Doc</div>
                     </th>
-                    <th className="p-4 text-left">
-                      <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">N°</div>
-                    </th>
+                   
                     <th className="p-4 text-left">
                       <div className="text-[12px] font-semibold uppercase tracking-wide text-slate-500">Date</div>
                     </th>
@@ -299,8 +295,10 @@ export default function AdminReclamationsPage() {
                 </thead>
 
                 <tbody className="divide-y divide-gray-100">
+                  
                   {pageItems.map((r, i) => (
                     <tr key={r._id} className={i % 2 ? "bg-white" : "bg-gray-50/40"}>
+                       <td className="px-4 py-3 tabular-nums">{r.numero || "—"}</td>
                       {/* Client */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -309,14 +307,11 @@ export default function AdminReclamationsPage() {
                         </div>
                       </td>
 
-                      {/* Email */}
-                      <td className="px-4 py-3 text-gray-700 break-all">{r.email || "—"}</td>
-
                       {/* Type */}
                       <td className="px-4 py-3 capitalize">{r.typeDoc?.replace("_", " ") || "—"}</td>
 
                       {/* Numero */}
-                      <td className="px-4 py-3 tabular-nums">{r.numero || "—"}</td>
+                     
 
                       {/* Date */}
                       <td className="px-4 py-3 whitespace-nowrap">{fmtDateTime(r.date)}</td>
