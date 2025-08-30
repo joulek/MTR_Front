@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter"; // ← import du footer
 import {
   ShieldCheck, FileText, Database, Cookie, Lock, Mail, RefreshCw
 } from "lucide-react";
@@ -20,7 +21,7 @@ export default function PrivacyPolicyPage() {
   const p = useParams();
   const locale = typeof p?.locale === "string" ? p.locale : "fr";
 
-  const lastUpdated = "26/08/2025"; // ↺ pense à mettre à jour la date si tu modifies la page
+  const lastUpdated = "26/08/2025";
 
   const blocks = [
     {
@@ -122,7 +123,10 @@ export default function PrivacyPolicyPage() {
       <SiteHeader />
 
       {/* HERO */}
-      <section className="relative -mt-10 flex min-h-[45vh] items-center justify-center bg-[#0B2239] text-white">
+      <section
+        id="accueil" // ← pour le bouton “back-to-top” du footer
+        className="relative -mt-10 flex min-h-[45vh] items-center justify-center bg-[#0B2239] text-white"
+      >
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_20%_10%,rgba(255,255,255,0.06),transparent),radial-gradient(60%_40%_at_85%_80%,rgba(245,179,1,0.10),transparent)]" />
         <motion.div
           variants={vSection}
@@ -197,6 +201,9 @@ export default function PrivacyPolicyPage() {
           </motion.div>
         </div>
       </motion.section>
+
+      {/* FOOTER réutilisable */}
+      <SiteFooter locale={locale} />
     </div>
   );
 }

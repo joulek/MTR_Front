@@ -1,8 +1,6 @@
-// app/mes-reclamations/page.jsx  (ou pages/mes-reclamations.jsx)
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
-// import Link from "next/link"; // (inutile ici, retiré)
 import { useLocale, useTranslations } from "next-intl";
 import { FiSearch, FiXCircle, FiFileText } from "react-icons/fi";
 import Pagination from "@/components/Pagination";
@@ -15,13 +13,6 @@ function getCookie(name) {
   const v = document.cookie.split("; ").find((c) => c.startsWith(name + "="));
   return v ? decodeURIComponent(v.split("=")[1]) : "";
 }
-
-const STATUS_COLORS = {
-  open: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  processing: "bg-blue-100 text-blue-800 border-blue-300",
-  resolved: "bg-green-100 text-green-800 border-green-300",
-  rejected: "bg-red-100 text-red-800 border-red-300",
-};
 /* ------------------------------------------------- */
 
 export default function MesReclamationsPage() {
@@ -59,8 +50,6 @@ export default function MesReclamationsPage() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error(data?.message || "Fetch error");
-
-      // Assure-toi côté API de NE PAS renvoyer demandePdf.data (buffer)
       setAllItems(data.items || []);
     } catch (e) {
       setError(e.message || "Network error");
@@ -196,6 +185,11 @@ export default function MesReclamationsPage() {
                   </th>
                   <th className="p-3 text-left">
                     <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      N° devis
+                    </div>
+                  </th>
+                  <th className="p-3 text-left">
+                    <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                       {t("table.nature")}
                     </div>
                   </th>
@@ -216,7 +210,7 @@ export default function MesReclamationsPage() {
                   </th>
                 </tr>
                 <tr>
-                  <td colSpan={7}>
+                  <td colSpan={6}>
                     <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
                   </td>
                 </tr>
@@ -226,30 +220,47 @@ export default function MesReclamationsPage() {
                 {pageItems.map((it) => {
                   const typeDoc = (it?.commande?.typeDoc || "-").toUpperCase();
                   const numero = it?.commande?.numero || "—";
-                  const hasPdf = !!it?.demandePdf?.generatedAt; // expose ceci côté API
+                  const hasPdf = !!it?.demandePdf?.generatedAt;
 
                   return (
-                    <tr key={it._id} className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors">
+                    <tr
+                      key={it._id}
+                      className="bg-white hover:bg-[#0B1E3A]/[0.03] transition-colors"
+                    >
+                      {/* Document (type) */}
                       <td className="p-3 align-top">
                         <span className="inline-flex items-center gap-2 text-[#0B1E3A] font-medium">
                           <span className="h-2 w-2 rounded-full bg-[#F7C600] shrink-0" />
                           <span>{typeDoc}</span>
                         </span>
-                        <div className="text-slate-600">{numero}</div>
                       </td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{it?.nature || "-"}</td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{it?.attente || "-"}</td>
-                      <td className="p-3 align-top text-[#0B1E3A]">{prettyDateTime(it?.createdAt)}</td>
+
+                      {/* N° devis */}
+                      <td className="p-3 align-top font-mono text-[#0B1E3A]">
+                        {numero}
+                      </td>
+
+                      <td className="p-3 align-top text-[#0B1E3A]">
+                        {it?.nature || "-"}
+                      </td>
+                      <td className="p-3 align-top text-[#0B1E3A]">
+                        {it?.attente || "-"}
+                      </td>
+                      <td className="p-3 align-top text-[#0B1E3A]">
+                        {prettyDateTime(it?.createdAt)}
+                      </td>
 
                       <td className="p-3 align-top">
                         {hasPdf ? (
                           <button
                             type="button"
                             onClick={() => openPdf(it._id)}
-                            className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-0.5 text-xs hover:bg-slate-50 text-[#0B1E3A]"
+                            /* === taille du bouton augmentée ici === */
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 text-[#0B1E3A]"
                             title={t("aria.openPdf")}
                           >
-                            <FiFileText /> {t("actions.open")}
+                            <FiFileText size={16} />
+                            {t("actions.open")}
                           </button>
                         ) : (
                           <span className="text-slate-500">{NOT_YET}</span>
@@ -274,8 +285,6 @@ export default function MesReclamationsPage() {
           </>
         )}
       </div>
-
-      {/* Mobile: tu peux ajouter un rendu cartes si besoin */}
     </div>
   );
 }

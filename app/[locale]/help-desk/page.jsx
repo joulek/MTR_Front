@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter"; // ← import du footer
+
 import {
   PhoneCall, Mail, MessageSquare, MapPin, Send, ChevronDown,
   CheckCircle, LifeBuoy
@@ -317,6 +319,9 @@ export default function HelpDeskPage() {
           </div>
         </div>
       </motion.section>
+      
+            {/* FOOTER réutilisable */}
+            <SiteFooter locale={locale} />
     </div>
   );
 }
